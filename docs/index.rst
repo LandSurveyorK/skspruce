@@ -1,75 +1,75 @@
-.. skranger documentation master file, created by
+.. skspruce documentation master file, created by
    sphinx-quickstart on Mon May 25 18:16:20 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-skranger
+skspruce
 ========
 
 |build| |wheels| |rtd| |pypi| |pyversions|
 
-.. |build| image:: https://github.com/crflynn/skranger/actions/workflows/build_and_test.yml/badge.svg
-    :target: https://github.com/crflynn/skranger/actions
+.. |build| image:: https://github.com/crflynn/skspruce/actions/workflows/build_and_test.yml/badge.svg
+    :target: https://github.com/crflynn/skspruce/actions
 
-.. |wheels| image:: https://github.com/crflynn/skranger/actions/workflows/release.yml/badge.svg
-    :target: https://github.com/crflynn/skranger/actions
+.. |wheels| image:: https://github.com/crflynn/skspruce/actions/workflows/release.yml/badge.svg
+    :target: https://github.com/crflynn/skspruce/actions
 
-.. |rtd| image:: https://img.shields.io/readthedocs/skranger.svg
-    :target: http://skranger.readthedocs.io/en/latest/
+.. |rtd| image:: https://img.shields.io/readthedocs/skspruce.svg
+    :target: http://skspruce.readthedocs.io/en/latest/
 
-.. |pypi| image:: https://img.shields.io/pypi/v/skranger.svg
-    :target: https://pypi.python.org/pypi/skranger
+.. |pypi| image:: https://img.shields.io/pypi/v/skspruce.svg
+    :target: https://pypi.python.org/pypi/skspruce
 
-.. |pyversions| image:: https://img.shields.io/pypi/pyversions/skranger.svg
-    :target: https://pypi.python.org/pypi/skranger
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/skspruce.svg
+    :target: https://pypi.python.org/pypi/skspruce
 
-``skranger`` provides `scikit-learn <https://scikit-learn.org/stable/index.html>`__ compatible Python bindings to the C++ random forest implementation, `ranger <https://github.com/imbs-hl/ranger>`__, using `Cython <https://cython.readthedocs.io/en/latest/>`__.
+``skspruce`` provides `scikit-learn <https://scikit-learn.org/stable/index.html>`__ compatible Python bindings to the C++ random forest implementation, `spruce <https://github.com/imbs-hl/spruce>`__, using `Cython <https://cython.readthedocs.io/en/latest/>`__.
 
-The latest release of ``skranger`` uses version `0.12.1 <https://github.com/imbs-hl/ranger/releases/tag/0.12.1>`__ of ``ranger``.
+The latest release of ``skspruce`` uses version `0.12.1 <https://github.com/imbs-hl/spruce/releases/tag/0.12.1>`__ of ``spruce``.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   ranger_forest_classifier
-   ranger_forest_regressor
-   ranger_forest_survival
-   ranger_tree_classifier
-   ranger_tree_regressor
-   ranger_tree_survival
+   spruce_forest_classifier
+   spruce_forest_regressor
+   spruce_forest_survival
+   spruce_tree_classifier
+   spruce_tree_regressor
+   spruce_tree_survival
    tree_interface
 
 Installation
 ------------
 
-``skranger`` is available on `pypi <https://pypi.org/project/skranger>`__ and can be installed via pip:
+``skspruce`` is available on `pypi <https://pypi.org/project/skspruce>`__ and can be installed via pip:
 
 .. code-block:: bash
 
-    pip install skranger
+    pip install skspruce
 
 
 Usage
 -----
 
-There are two ``sklearn`` compatible classes, ``RangerForestClassifier`` and ``RangerForestRegressor``. There is also the ``RangerForestSurvival`` class, which aims to be compatible with the `scikit-survival <https://github.com/sebp/scikit-survival>`__ API.
+There are two ``sklearn`` compatible classes, ``spruceForestClassifier`` and ``spruceForestRegressor``. There is also the ``spruceForestSurvival`` class, which aims to be compatible with the `scikit-survival <https://github.com/sebp/scikit-survival>`__ API.
 
 
-RangerForestClassifier
+spruceForestClassifier
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The ``RangerForestClassifier`` predictor uses ``ranger``'s ForestProbability class to enable both ``predict`` and ``predict_proba`` methods.
+The ``spruceForestClassifier`` predictor uses ``spruce``'s ForestProbability class to enable both ``predict`` and ``predict_proba`` methods.
 
 .. code-block:: python
 
     from sklearn.datasets import load_iris
     from sklearn.model_selection import train_test_split
-    from skranger.ensemble import RangerForestClassifier
+    from skspruce.ensemble import spruceForestClassifier
 
     X, y = load_iris(return_X_y=True)
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    rfc = RangerForestClassifier()
+    rfc = spruceForestClassifier()
     rfc.fit(X_train, y_train)
 
     predictions = rfc.predict(X_test)
@@ -85,21 +85,21 @@ The ``RangerForestClassifier`` predictor uses ``ranger``'s ForestProbability cla
     #  [0.99       0.01       0.        ]]
 
 
-RangerForestRegressor
+spruceForestRegressor
 ~~~~~~~~~~~~~~~~~~~~~
 
-The ``RangerForestRegressor`` predictor uses ``ranger``'s ForestRegression class. It also supports quantile regression using the ``predict_quantiles`` method.
+The ``spruceForestRegressor`` predictor uses ``spruce``'s ForestRegression class. It also supports quantile regression using the ``predict_quantiles`` method.
 
 .. code-block:: python
 
     from sklearn.datasets import load_boston
     from sklearn.model_selection import train_test_split
-    from skranger.ensemble import RangerForestRegressor
+    from skspruce.ensemble import spruceForestRegressor
 
     X, y = load_boston(return_X_y=True)
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    rfr = RangerForestRegressor()
+    rfr = spruceForestRegressor()
     rfr.fit(X_train, y_train)
 
     predictions = rfr.predict(X_test)
@@ -111,7 +111,7 @@ The ``RangerForestRegressor`` predictor uses ``ranger``'s ForestRegression class
     #  21.22463333]
 
     # enable quantile regression on instantiation
-    rfr = RangerForestRegressor(quantiles=True)
+    rfr = spruceForestRegressor(quantiles=True)
     rfr.fit(X_train, y_train)
 
     quantile_lower = rfr.predict_quantiles(X_test, quantiles=[0.1])
@@ -130,23 +130,23 @@ The ``RangerForestRegressor`` predictor uses ``ranger``'s ForestRegression class
     #  25.   31.51 28.   20.8  26.7  42.13 24.24]
 
 
-RangerForestSurvival
+spruceForestSurvival
 ~~~~~~~~~~~~~~~~~~~~
 
-The ``RangerForestSurvival`` predictor uses ``ranger``'s ForestSurvival class, and has an interface similar to the RangerSurvivalForest found in the ``scikit-survival`` package.
+The ``spruceForestSurvival`` predictor uses ``spruce``'s ForestSurvival class, and has an interface similar to the spruceSurvivalForest found in the ``scikit-survival`` package.
 
 .. code-block:: python
 
     from sksurv.datasets import load_veterans_lung_cancer
     from sklearn.model_selection import train_test_split
-    from skranger.ensemble import RangerForestSurvival
+    from skspruce.ensemble import spruceForestSurvival
 
     X, y = load_veterans_lung_cancer()
     # select the numeric columns as features
     X = X[["Age_in_years", "Karnofsky_score", "Months_from_Diagnosis"]]
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    rfs = RangerForestSurvival()
+    rfs = spruceForestSurvival()
     rfs.fit(X_train, y_train)
 
     predictions = rfs.predict(X_test)
@@ -177,7 +177,7 @@ The ``RangerForestSurvival`` predictor uses ``ranger``'s ForestSurvival class, a
 License
 -------
 
-``skranger`` is licensed under `GPLv3 <https://github.com/crflynn/skranger/blob/master/LICENSE.txt>`__.
+``skspruce`` is licensed under `GPLv3 <https://github.com/crflynn/skspruce/blob/master/LICENSE.txt>`__.
 
 
 Indices and tables

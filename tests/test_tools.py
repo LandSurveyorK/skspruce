@@ -5,9 +5,9 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 
-from skranger.ensemble import RangerForestClassifier
-from skranger.ensemble import RangerForestRegressor
-from skranger.utils.shap import shap_patch
+from skspruce.ensemble import SpruceForestClassifier
+from skspruce.ensemble import SpruceForestRegressor
+from skspruce.utils.shap import shap_patch
 
 
 @pytest.mark.skip()
@@ -17,7 +17,7 @@ def test_plot():
     from sklearn.tree import plot_tree
 
     boston_X, boston_y = load_boston(return_X_y=True)
-    forest = RangerForestRegressor(enable_tree_details=True)
+    forest = SpruceForestRegressor(enable_tree_details=True)
     forest.fit(boston_X, boston_y)
     estimator = forest.get_estimator(0)
     plt.figure()
@@ -37,7 +37,7 @@ def test_plot():
 def test_shap_regressor(boston_X, boston_y):
     from shap import TreeExplainer
 
-    forest = RangerForestRegressor(enable_tree_details=True)
+    forest = SpruceForestRegressor(enable_tree_details=True)
     forest.fit(boston_X, boston_y)
 
     with shap_patch():
@@ -52,7 +52,7 @@ def test_shap_regressor(boston_X, boston_y):
 def test_shap_classifier(iris_X, iris_y):
     from shap import TreeExplainer
 
-    forest = RangerForestClassifier(enable_tree_details=True)
+    forest = SpruceForestClassifier(enable_tree_details=True)
     forest.fit(iris_X, iris_y)
 
     with shap_patch():

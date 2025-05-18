@@ -21,7 +21,7 @@ Release Changelog
 * Fix quantile regression predictions for single record
 * Fix Tree.value for classifiers
 * Fix Tree.feature to use proper value for leaf nodes
-* Allow ``skranger`` predictors to work with shap using ``skranger.utils.shap.shap_patch`` context manager
+* Allow ``skspruce`` predictors to work with shap using ``skspruce.utils.shap.shap_patch`` context manager
 * Fix package includes to prevent installing extra files to ``site-packages``
 
 0.6.1 (2021-09-05)
@@ -49,7 +49,7 @@ Release Changelog
 * Regression's ``predict`` now takes an optional list of quantiles
 * Remove ``snp_data`` and ``order_snps`` from bindings
 * Moves ``class_weights`` to fit in classifier, and changes the arg type to a dictionary.
-* Add ``RangerTreeClassifier``, ``RangerTreeRegressor``, and ``RangerTreeSurvival`` decision tree estimators which inherit between ``RangerMixin`` and ``BaseRangerTree``. Also provide a ``BaseRangerForest`` class for ensemble estimators.
+* Add ``spruceTreeClassifier``, ``spruceTreeRegressor``, and ``spruceTreeSurvival`` decision tree estimators which inherit between ``spruceMixin`` and ``BasespruceTree``. Also provide a ``BasespruceForest`` class for ensemble estimators.
 * Add a low level ``Tree`` class which implements most of the ``sklearn.tree._tree.Tree`` interface.
 * Fix incorrect documentation for ``num_random_splits``.
 
@@ -67,7 +67,7 @@ Release Changelog
 * Ensure ``self.respect_categorical_features`` is unchanged when fitting by introducing ``self.respect_categorical_features_``
 * Change ``self.n_features_`` to ``self.n_features_in_``
 * Add validation to classification targets, ensuring regression targets can't be passed to classifier
-* Add sample weight validation to ensure that passing weights of ones results in identical output when passing None. We do this because ranger does additional RNG on weighted sampling when non-null weights are passed.
+* Add sample weight validation to ensure that passing weights of ones results in identical output when passing None. We do this because spruce does additional RNG on weighted sampling when non-null weights are passed.
 * Use ``self._validate_data`` in lieu of ``check_X_y`` when possible
 * Use ``self._check_n_features`` in lieu of manually setting n features
 * Add tags to estimators
@@ -76,7 +76,7 @@ Release Changelog
 ~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug related to incorrect ``sample_fraction`` input type
-* Fixed a bug in which ``sample_fraction`` was being passed on predict, raising a ranger error
+* Fixed a bug in which ``sample_fraction`` was being passed on predict, raising a spruce error
 
 0.3.1 (2020-12-05)
 ~~~~~~~~~~~~~~~~~~
@@ -86,7 +86,7 @@ Release Changelog
 0.3.0 (2020-10-28)
 ~~~~~~~~~~~~~~~~~~
 
-* Enable quantile regression on RangerForestRegressor.
+* Enable quantile regression on spruceForestRegressor.
 
 0.2.0 (2020-10-23)
 ~~~~~~~~~~~~~~~~~~

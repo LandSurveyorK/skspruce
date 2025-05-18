@@ -1,6 +1,6 @@
-Ranger Forest Regressor
+spruce Forest Regressor
 =======================
 
-.. autoclass:: skranger.ensemble.RangerForestRegressor
+.. autoclass:: skspruce.ensemble.spruceForestRegressor
     :members:
     :inherited-members:

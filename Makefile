@@ -18,11 +18,11 @@ dist: copy
 
 .PHONY: docker
 docker:
-	docker build -t skranger .
+	docker build -t skspruce .
 
 .PHONY: linux
 linux: copy docker
-	docker run --rm -v $(shell pwd)/dist:/app/dist:rw skranger build
+	docker run --rm -v $(shell pwd)/dist:/app/dist:rw skspruce build
 
 .PHONY: docs
 docs:
@@ -43,7 +43,7 @@ publish: clean sdist
 
 .PHONY: release
 release: clean sdist
-	ghr -u crflynn -r skranger -c $(shell git rev-parse HEAD) -delete -b "release" -n $(shell poetry version -s) $(shell poetry version -s) dist/*.tar.gz
+	ghr -u crflynn -r skspruce -c $(shell git rev-parse HEAD) -delete -b "release" -n $(shell poetry version -s) $(shell poetry version -s) dist/*.tar.gz
 
 .PHONY: sdist
 sdist: copy
@@ -60,14 +60,14 @@ setup:
 
 .PHONY: test
 test:
-	poetry run pytest --cov=skranger --cov-report=html tests/
+	poetry run pytest --cov=skspruce --cov-report=html tests/
 	open htmlcov/index.html
 
 .PHONY: xtest
 xtest:
-	poetry run pytest --cov=skranger -n auto --cov-report=html tests/
+	poetry run pytest --cov=skspruce -n auto --cov-report=html tests/
 	open htmlcov/index.html
 
 .PHONY: dtest
 dtest:
-	docker run -t skranger run pytest
+	docker run -t skspruce run pytest

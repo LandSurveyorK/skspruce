@@ -4,10 +4,10 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
 
-from skranger.base import RangerMixin
+from skspruce.base import SpruceMixin
 
 
-class BaseRangerForest(RangerMixin):
+class BaseSpruceForest(SpruceMixin):
     @property
     def feature_importances_(self):
         try:
@@ -17,7 +17,7 @@ class BaseRangerForest(RangerMixin):
                 f"'{self.__class__.__name__}' object has no attribute 'feature_importances_'"
             ) from None
         try:
-            return np.array(self.ranger_forest_["variable_importance"])
+            return np.array(self.spruce_forest_["variable_importance"])
         except KeyError:
             raise ValueError(
                 "importance must be set to something other than 'none'"
@@ -34,7 +34,7 @@ class BaseRangerForest(RangerMixin):
                 "p-values can only be calculated with importance parameter set to 'impurity_corrected'"
             )
 
-        vimp = np.array(self.ranger_forest_["variable_importance"])
+        vimp = np.array(self.spruce_forest_["variable_importance"])
         m1 = vimp[vimp < 0]
         m2 = vimp[vimp == 0]
 

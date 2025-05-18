@@ -1,4 +1,4 @@
-"""Scikit-learn wrapper for ranger regression."""
+"""Scikit-learn wrapper for spruce regression."""
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.base import RegressorMixin
@@ -6,18 +6,18 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from skranger import ranger
-from skranger.ensemble.base import BaseRangerForest
-from skranger.tree import RangerTreeRegressor
+from skspruce import spruce
+from skspruce.ensemble.base import BaseSpruceForest
+from skspruce.tree import SpruceTreeRegressor
 
 
-class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
-    r"""Ranger Random Forest Regression implementation for sci-kit learn.
+class SpruceForestRegressor(BaseSpruceForest, RegressorMixin, BaseEstimator):
+    r"""Spruce Random Forest Regression implementation for sci-kit learn.
 
-    Provides a sklearn regressor interface to the Ranger C++ library using Cython.
+    Provides a sklearn regressor interface to the Spruce C++ library using Cython.
 
     :param int n_estimators: The number of tree regressors to train
-    :param bool verbose: Enable ranger's verbose logging
+    :param bool verbose: Enable spruce's verbose logging
     :param int/callable mtry: The number of features to split on each node. When a
         callable is passed, the function must accept a single parameter which is the
         number of features passed, and return some value between 1 and the number of
@@ -31,7 +31,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
         default is 1 when sampling with replacement, and 0.632 otherwise. This can be a
         list of class specific values.
     :param bool keep_inbag: If true, save how often observations are in-bag in each
-        tree. These will be stored in the ``ranger_forest_`` attribute under the key
+        tree. These will be stored in the ``spruce_forest_`` attribute under the key
         ``"inbag_counts"``.
     :param list inbag: A list of size ``n_estimators``, containing inbag counts for each
         observation. Can be used for stratified sampling.
@@ -68,7 +68,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
     :ivar int n_features_in\_: The number of features (columns) from the fit input
         ``X``.
     :ivar list feature_names\_: Names for the features of the fit input ``X``.
-    :ivar dict ranger_forest\_: The returned result object from calling C++ ranger.
+    :ivar dict spruce_forest\_: The returned result object from calling C++ spruce.
     :ivar int mtry\_: The mtry value as determined if ``mtry`` is callable, otherwise
         it is the same as ``mtry``.
     :ivar float sample_fraction\_: The sample fraction determined by input validation
@@ -76,17 +76,17 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
         validation.
     :ivar list unordered_features\_: The unordered feature names determined by
         input validation.
-    :ivar int split_rule\_: The split rule integer corresponding to ranger enum
+    :ivar int split_rule\_: The split rule integer corresponding to spruce enum
         ``SplitRule``.
     :ivar bool use_regularization_factor\_: Input validation determined bool for using
         regularization factor input parameter.
     :ivar str respect_categorical_features\_: Input validation determined string
         respecting categorical features.
-    :ivar int importance_mode\_: The importance mode integer corresponding to ranger
+    :ivar int importance_mode\_: The importance mode integer corresponding to spruce
         enum ``ImportanceMode``.
     :ivar 2darray random_node_values\_: Random training target values based on
         trained forest terminal nodes for the purpose of quantile regression.
-    :ivar ndarray feature_importances\_: The variable importances from ranger.
+    :ivar ndarray feature_importances\_: The variable importances from spruce.
     """
 
     def __init__(
@@ -163,7 +163,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
         if not self.enable_tree_details:
             raise ValueError("enable_tree_details must be True prior to training")
         return [
-            RangerTreeRegressor.from_forest(self, idx=idx)
+            SpruceTreeRegressor.from_forest(self, idx=idx)
             for idx in range(self.n_estimators)
         ]
 
@@ -174,7 +174,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
         check_is_fitted(self)
         if not self.enable_tree_details:
             raise ValueError("enable_tree_details must be True prior to training")
-        return RangerTreeRegressor.from_forest(self, idx=idx)
+        return SpruceTreeRegressor.from_forest(self, idx=idx)
 
     def fit(
         self,
@@ -185,7 +185,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
         always_split_features=None,
         categorical_features=None,
     ):
-        """Fit the ranger random forest using training data.
+        """Fit the spruce random forest using training data.
 
         :param array2d X: training input features
         :param array1d y: training input targets
@@ -228,7 +228,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
         ) = self._check_split_select_weights(split_select_weights)
 
         # Fit the forest
-        self.ranger_forest_ = ranger.ranger(
+        self.spruce_forest_ = spruce.spruce(
             self.tree_type_,
             np.asfortranarray(X.astype("float64")),
             np.asfortranarray(np.atleast_2d(y).astype("float64").transpose()),
@@ -340,7 +340,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
         X = check_array(X)
         self._check_n_features(X, reset=False)
 
-        result = ranger.ranger(
+        result = spruce.spruce(
             self.tree_type_,
             np.asfortranarray(X.astype("float64")),
             np.asfortranarray([[]]),
@@ -358,7 +358,7 @@ class RangerForestRegressor(BaseRangerForest, RegressorMixin, BaseEstimator):
             [],  # always_split_feature_names
             False,  # use_always_split_feature_names
             True,  # prediction_mode
-            self.ranger_forest_["forest"],  # loaded_forest
+            self.spruce_forest_["forest"],  # loaded_forest
             self.replace,  # sample_with_replacement
             False,  # probability
             [],  # unordered_feature_names

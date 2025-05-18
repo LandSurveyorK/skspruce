@@ -35,7 +35,7 @@ RUN poetry config virtualenvs.create false && \
 # Add everything
 ADD . .
 
-# Build skranger
+# Build skspruce
 RUN poetry run python buildpre.py
 RUN poetry install
 

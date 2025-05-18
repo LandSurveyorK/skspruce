@@ -1,4 +1,4 @@
-"""Scikit-learn wrapper for ranger classification."""
+"""Scikit-learn wrapper for spruce classification."""
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -7,18 +7,18 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from skranger import ranger
-from skranger.ensemble.base import BaseRangerForest
-from skranger.tree.classifier import RangerTreeClassifier
+from skspruce import spruce
+from skspruce.ensemble.base import BaseSpruceForest
+from skspruce.tree.classifier import SpruceTreeClassifier
 
 
-class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
-    r"""Ranger Random Forest Probability/Classification implementation for sci-kit learn.
+class SpruceForestClassifier(BaseSpruceForest, ClassifierMixin, BaseEstimator):
+    r"""Spruce Random Forest Probability/Classification implementation for sci-kit learn.
 
-    Provides a sklearn classifier interface to the Ranger C++ library using Cython.
+    Provides a sklearn classifier interface to the Spruce C++ library using Cython.
 
     :param int n_estimators: The number of tree classifiers to train
-    :param bool verbose: Enable ranger's verbose logging
+    :param bool verbose: Enable spruce's verbose logging
     :param int/callable mtry: The number of features to split on each node. When a
         callable is passed, the function must accept a single parameter which is the
         number of features passed, and return some value between 1 and the number of
@@ -32,7 +32,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
         default is 1 when sampling with replacement, and 0.632 otherwise. This can be a
         list of class specific values.
     :param bool keep_inbag: If true, save how often observations are in-bag in each
-        tree. These will be stored in the ``ranger_forest_`` attribute under the key
+        tree. These will be stored in the ``spruce_forest_`` attribute under the key
         ``"inbag_counts"``.
     :param list inbag: A list of size ``n_estimators``, containing inbag counts for each
         observation. Can be used for stratified sampling.
@@ -65,23 +65,23 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
     :ivar int n_features_in\_: The number of features (columns) from the fit input
         ``X``.
     :ivar list feature_names\_: Names for the features of the fit input ``X``.
-    :ivar dict ranger_forest\_: The returned result object from calling C++ ranger.
+    :ivar dict spruce_forest\_: The returned result object from calling C++ spruce.
     :ivar int mtry\_: The mtry value as determined if ``mtry`` is callable, otherwise
         it is the same as ``mtry``.
     :ivar float/list sample_fraction\_: The sample fraction determined by input
         validation
     :ivar list regularization_factor\_: The regularization factors determined by input
         validation.
-    :ivar int split_rule\_: The split rule integer corresponding to ranger enum
+    :ivar int split_rule\_: The split rule integer corresponding to spruce enum
         ``SplitRule``.
     :ivar bool use_regularization_factor\_: Input validation determined bool for using
         regularization factor input parameter.
     :ivar str respect_categorical_features\_: Input validation determined string
         respecting categorical features.
-    :ivar int importance_mode\_: The importance mode integer corresponding to ranger
+    :ivar int importance_mode\_: The importance mode integer corresponding to spruce
         enum ``ImportanceMode``.
-    :ivar list ranger_class_order\_: The class reference ordering derived from ranger.
-    :ivar ndarray feature_importances\_: The variable importances from ranger.
+    :ivar list spruce_class_order\_: The class reference ordering derived from spruce.
+    :ivar ndarray feature_importances\_: The variable importances from spruce.
     """
 
     def __init__(
@@ -146,7 +146,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
         if not self.enable_tree_details:
             raise ValueError("enable_tree_details must be True prior to training")
         return [
-            RangerTreeClassifier.from_forest(self, idx=idx)
+            SpruceTreeClassifier.from_forest(self, idx=idx)
             for idx in range(self.n_estimators)
         ]
 
@@ -157,7 +157,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
         check_is_fitted(self)
         if not self.enable_tree_details:
             raise ValueError("enable_tree_details must be True prior to training")
-        return RangerTreeClassifier.from_forest(self, idx=idx)
+        return SpruceTreeClassifier.from_forest(self, idx=idx)
 
     def fit(
         self,
@@ -169,7 +169,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
         always_split_features=None,
         categorical_features=None,
     ):
-        """Fit the ranger random forest using training data.
+        """Fit the spruce random forest using training data.
 
         :param array2d X: training input features
         :param array1d y: training input target classes
@@ -231,7 +231,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
         ) = self._check_split_select_weights(split_select_weights)
 
         # Fit the forest
-        self.ranger_forest_ = ranger.ranger(
+        self.spruce_forest_ = spruce.spruce(
             self.tree_type_,
             np.asfortranarray(X.astype("float64")),
             np.asfortranarray(np.atleast_2d(y).astype("float64").transpose()),
@@ -275,8 +275,8 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
             False,  # use_regularization_factor
             self.regularization_usedepth,
         )
-        self.ranger_class_order_ = np.argsort(
-            np.array(self.ranger_forest_["forest"]["class_values"]).astype(int)
+        self.spruce_class_order_ = np.argsort(
+            np.array(self.spruce_forest_["forest"]["class_values"]).astype(int)
         )
 
         if self.enable_tree_details:
@@ -307,7 +307,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
         X = check_array(X)
         self._check_n_features(X, reset=False)
 
-        result = ranger.ranger(
+        result = spruce.spruce(
             self.tree_type_,
             np.asfortranarray(X.astype("float64")),
             np.asfortranarray([[]]),
@@ -325,7 +325,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
             [],  # always_split_variable_names
             False,  # use_always_split_variable_names
             True,  # prediction_mode
-            self.ranger_forest_["forest"],  # loaded_forest
+            self.spruce_forest_["forest"],  # loaded_forest
             self.replace,  # sample_with_replacement
             False,  # probability
             [],  # unordered_feature_names
@@ -352,7 +352,7 @@ class RangerForestClassifier(BaseRangerForest, ClassifierMixin, BaseEstimator):
             self.regularization_usedepth,
         )
         predictions = np.atleast_2d(np.array(result["predictions"]))
-        return predictions[:, self.ranger_class_order_]
+        return predictions[:, self.spruce_class_order_]
 
     def predict_log_proba(self, X):
         """Predict log probabilities for classes from X.

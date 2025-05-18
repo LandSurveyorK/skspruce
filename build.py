@@ -6,18 +6,18 @@ from Cython.Build import cythonize
 from setuptools import Extension
 from setuptools import setup
 
-# skranger project directory
+# skspruce project directory
 top = os.path.dirname(os.path.abspath(__file__))
 
-# include skranger, ranger, and numpy headers
+# include skspruce, spruce, and numpy headers
 # requires running buildpre.py to find src in this location
 include_dirs = [
     top,
-    os.path.join(top, "skranger"),
-    os.path.join(top, "skranger", "ranger", "src"),
-    os.path.join(top, "skranger", "ranger", "src", "Forest"),
-    os.path.join(top, "skranger", "ranger", "src", "Tree"),
-    os.path.join(top, "skranger", "ranger", "src", "utility"),
+    os.path.join(top, "skspruce"),
+    os.path.join(top, "skspruce", "spruce", "src"),
+    os.path.join(top, "skspruce", "spruce", "src", "Forest"),
+    os.path.join(top, "skspruce", "spruce", "src", "Tree"),
+    os.path.join(top, "skspruce", "spruce", "src", "utility"),
     np.get_include(),
 ]
 
@@ -56,12 +56,12 @@ def create_extension(module_name):
     )
 
 
-ext_modules = [create_extension(name) for name in find_pyx_files("skranger")]
+ext_modules = [create_extension(name) for name in find_pyx_files("skspruce")]
 
 
 def build_ext():
     setup(
-        name="skranger",
+        name="skspruce",
         ext_modules=cythonize(
             ext_modules,
             gdb_debug=False,

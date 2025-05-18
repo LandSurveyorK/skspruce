@@ -1,6 +1,6 @@
-Ranger Tree Regressor
+spruce Tree Regressor
 =====================
 
-.. autoclass:: skranger.tree.RangerTreeRegressor
+.. autoclass:: skspruce.tree.spruceTreeRegressor
     :members:
     :inherited-members:

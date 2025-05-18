@@ -1,4 +1,4 @@
-"""Scikit-learn wrapper for ranger survival."""
+"""Scikit-learn wrapper for spruce survival."""
 import typing as t
 
 import numpy as np
@@ -6,19 +6,19 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from skranger import ranger
-from skranger.tree.base import BaseRangerTree
+from skspruce import spruce
+from skspruce.tree.base import BaseSpruceTree
 
 if t.TYPE_CHECKING:  # pragma: no cover
-    from skranger.ensemble.survival import RangerForestSurvival
+    from skspruce.ensemble.survival import SpruceForestSurvival
 
 
-class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
-    r"""Ranger Survival implementation for sci-kit survival.
+class SpruceTreeSurvival(BaseSpruceTree, BaseEstimator):
+    r"""Spruce Survival implementation for sci-kit survival.
 
-    Provides a sksurv interface to the Ranger C++ library using Cython.
+    Provides a sksurv interface to the Spruce C++ library using Cython.
 
-    :param bool verbose: Enable ranger's verbose logging
+    :param bool verbose: Enable spruce's verbose logging
     :param int/callable mtry: The number of features to split on each node. When a
         callable is passed, the function must accept a single parameter which is the
         number of features passed, and return some value between 1 and the number of
@@ -31,7 +31,7 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
     :param float sample_fraction: The fraction of observations to sample. The default
         is 1 when sampling with replacement, and 0.632 otherwise.
     :param bool keep_inbag: If true, save how often observations are in-bag in each
-        tree. These will be stored in the ``ranger_forest_`` attribute under the key
+        tree. These will be stored in the ``spruce_forest_`` attribute under the key
         ``"inbag_counts"``.
     :param list inbag: A list of size ``n_estimators``, containing inbag counts for each
         observation. Can be used for stratified sampling.
@@ -60,7 +60,7 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
 
     :ivar int n_features_in\_: The number of features (columns) from the fit input ``X``.
     :ivar list feature_names\_: Names for the features of the fit input ``X``.
-    :ivar dict ranger_forest\_: The returned result object from calling C++ ranger.
+    :ivar dict spruce_forest\_: The returned result object from calling C++ spruce.
     :ivar int mtry\_: The mtry value as determined if ``mtry`` is callable, otherwise
         it is the same as ``mtry``.
     :ivar float sample_fraction\_: The sample fraction determined by input validation.
@@ -68,15 +68,15 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
         validation.
     :ivar list unordered_feature_names\_: The unordered feature names determined by
         input validation.
-    :ivar int split_rule\_: The split rule integer corresponding to ranger enum
+    :ivar int split_rule\_: The split rule integer corresponding to spruce enum
         ``SplitRule``.
     :ivar bool use_regularization_factor\_: Input validation determined bool for using
         regularization factor input parameter.
     :ivar str respect_categorical_features\_: Input validation determined string
         respecting categorical features.
-    :ivar int importance_mode\_: The importance mode integer corresponding to ranger
+    :ivar int importance_mode\_: The importance mode integer corresponding to spruce
         enum ``ImportanceMode``.
-    :ivar ndarray feature_importances\_: The variable importances from ranger.
+    :ivar ndarray feature_importances\_: The variable importances from spruce.
     """
 
     def __init__(
@@ -127,10 +127,10 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
         self.seed = seed
 
     @classmethod
-    def from_forest(cls, forest: "RangerForestSurvival", idx: int):
+    def from_forest(cls, forest: "SpruceForestSurvival", idx: int):
         """Extract a tree from a forest.
 
-        :param RangerForestClassifier forest: A trained RangerForestClassifier instance
+        :param SpruceForestClassifier forest: A trained SpruceForestClassifier instance
         :param int idx: The tree index from the forest to extract.
         """
         # Even though we have a tree object, we keep the exact same dictionary structure
@@ -162,19 +162,19 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
             seed=forest.seed,
         )
         # forest
-        ranger_forest = {}
-        for k, v in forest.ranger_forest_.items():
+        spruce_forest = {}
+        for k, v in forest.spruce_forest_.items():
             if k == "forest":
-                ranger_forest[k] = {}
+                spruce_forest[k] = {}
                 for fk, fv in v.items():
                     if isinstance(fv, list) and len(fv) > 0 and isinstance(fv[0], list):
-                        ranger_forest[k][fk] = [fv[idx]]
+                        spruce_forest[k][fk] = [fv[idx]]
                     else:
-                        ranger_forest[k][fk] = fv
+                        spruce_forest[k][fk] = fv
             else:
-                ranger_forest[k] = v
-        ranger_forest["num_trees"] = 1
-        instance.ranger_forest_ = ranger_forest
+                spruce_forest[k] = v
+        spruce_forest["num_trees"] = 1
+        instance.spruce_forest_ = spruce_forest
         # vars
         instance.n_features_in_ = forest.n_features_in_
         instance.feature_names_ = forest.feature_names_
@@ -198,7 +198,7 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
         always_split_features=None,
         categorical_features=None,
     ):
-        """Fit the ranger random forest using training data.
+        """Fit the spruce random forest using training data.
 
         :param array2d X: training input features
         :param array2d y: training input targets, rows of (bool, float)
@@ -218,7 +218,7 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
         X = check_array(X)
 
         # convert 1d array of 2tuples to 2d array
-        # ranger expects the time first, and status second
+        # spruce expects the time first, and status second
         # since we follow the scikit-survival convention, we fliplr
         yr = np.fliplr(np.array(y.tolist()))
 
@@ -247,7 +247,7 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
         ) = self._check_split_select_weights(split_select_weights)
 
         # Fit the forest
-        self.ranger_forest_ = ranger.ranger(
+        self.spruce_forest_ = spruce.spruce(
             self.tree_type_,
             np.asfortranarray(X.astype("float64")),
             np.asfortranarray(yr.astype("float64")),
@@ -292,11 +292,11 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
             self.regularization_usedepth,
         )
         self.event_times_ = np.array(
-            self.ranger_forest_["forest"]["unique_death_times"]
+            self.spruce_forest_["forest"]["unique_death_times"]
         )
         # dtype to suppress warning about ragged nested sequences
         self.cumulative_hazard_function_ = np.array(
-            self.ranger_forest_["forest"]["cumulative_hazard_function"], dtype=object
+            self.spruce_forest_["forest"]["cumulative_hazard_function"], dtype=object
         )
         sample_weight = sample_weight if sample_weight != [] else np.ones(len(X))
 
@@ -312,7 +312,7 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
         X = check_array(X)
         self._check_n_features(X, reset=False)
 
-        result = ranger.ranger(
+        result = spruce.spruce(
             self.tree_type_,
             np.asfortranarray(X.astype("float64")),
             np.asfortranarray([[]]),
@@ -330,7 +330,7 @@ class RangerTreeSurvival(BaseRangerTree, BaseEstimator):
             [],  # always_split_variable_names
             False,  # use_always_split_variable_names
             True,  # prediction_mode
-            self.ranger_forest_["forest"],  # loaded_forest
+            self.spruce_forest_["forest"],  # loaded_forest
             self.replace,  # sample_with_replacement
             False,  # probability
             [],  # unordered_feature_names

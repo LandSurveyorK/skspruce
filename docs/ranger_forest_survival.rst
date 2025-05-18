@@ -1,6 +1,6 @@
-Ranger Forest Survival
+spruce Forest Survival
 ======================
 
-.. autoclass:: skranger.ensemble.RangerForestSurvival
+.. autoclass:: skspruce.ensemble.spruceForestSurvival
     :members:
     :inherited-members:

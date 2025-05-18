@@ -1,6 +1,6 @@
-Ranger Forest Classifier
+spruce Forest Classifier
 ========================
 
-.. autoclass:: skranger.ensemble.RangerForestClassifier
+.. autoclass:: skspruce.ensemble.spruceForestClassifier
     :members:
     :inherited-members:

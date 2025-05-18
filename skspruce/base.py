@@ -4,10 +4,10 @@ from typing import Iterable
 import numpy as np
 from sklearn.utils.validation import _check_sample_weight
 
-from skranger import ranger
+from skspruce import spruce
 
 
-class RangerMixin:
+class SpruceMixin:
     @property
     def criterion(self):
         """Compatibility alias for split rule."""
@@ -15,11 +15,11 @@ class RangerMixin:
 
     # region validation
     def _validate_parameters(self, X, y, sample_weights):
-        """Validate ranger parameters and set defaults."""
+        """Validate spruce parameters and set defaults."""
         if hasattr(self, "n_jobs"):
             self.n_jobs_ = max(
                 [self.n_jobs, 0]
-            )  # sklearn convention is -1 for all, ranger is 0
+            )  # sklearn convention is -1 for all, spruce is 0
         self._set_respect_categorical_features()
         self._evaluate_mtry(X.shape[1])
         self._set_importance_mode()
@@ -62,15 +62,15 @@ class RangerMixin:
 
         if self.tree_type_ in (1, 9):  # classification/probability
             if self.split_rule == "gini":
-                self.split_rule_ = 1  # ranger_.SplitRule.LOGRANK
+                self.split_rule_ = 1  # spruce_.SplitRule.LOGRANK
             elif self.split_rule == "extratrees":
-                self.split_rule_ = 5  # ranger_.SplitRule.EXTRATREES
+                self.split_rule_ = 5  # spruce_.SplitRule.EXTRATREES
             elif self.split_rule == "hellinger":
                 if len(np.unique(y)) > 2:
                     raise ValueError(
                         "hellinger split rule can only be used in binary classification"
                     )
-                self.split_rule_ = 7  # ranger_.SplitRule.HELLINGER
+                self.split_rule_ = 7  # spruce_.SplitRule.HELLINGER
             else:
                 raise ValueError(
                     "split rule must be either gini, extratrees, or hellinger"
@@ -78,13 +78,13 @@ class RangerMixin:
 
         elif self.tree_type_ == 3:  # regression
             if self.split_rule == "variance":
-                self.split_rule_ = 1  # ranger_.SplitRule.LOGRANK
+                self.split_rule_ = 1  # spruce_.SplitRule.LOGRANK
             elif self.split_rule == "extratrees":
-                self.split_rule_ = 5  # ranger_.SplitRule.EXTRATREES
+                self.split_rule_ = 5  # spruce_.SplitRule.EXTRATREES
             elif self.split_rule == "maxstat":
-                self.split_rule_ = 4  # ranger_.SplitRule.MAXSTAT
+                self.split_rule_ = 4  # spruce_.SplitRule.MAXSTAT
             elif self.split_rule == "beta":
-                self.split_rule_ = 6  # ranger_.SplitRule.BETA
+                self.split_rule_ = 6  # spruce_.SplitRule.BETA
                 if np.max(y) > 1 or np.max(y) < 0:
                     raise ValueError(
                         "Targets must be between 0 and 1 for beta splitrule"
@@ -96,15 +96,15 @@ class RangerMixin:
 
         elif self.tree_type_ == 5:  # survival
             if self.split_rule == "logrank":
-                self.split_rule_ = 1  # ranger_.SplitRule.LOGRANK
+                self.split_rule_ = 1  # spruce_.SplitRule.LOGRANK
             elif self.split_rule == "extratrees":
-                self.split_rule_ = 5  # ranger_.SplitRule.EXTRATREES
+                self.split_rule_ = 5  # spruce_.SplitRule.EXTRATREES
             elif self.split_rule == "C":
-                self.split_rule_ = 2  # ranger_.SplitRule.AUC
+                self.split_rule_ = 2  # spruce_.SplitRule.AUC
             elif self.split_rule == "C_ignore_ties":
-                self.split_rule_ = 3  # ranger_.SplitRule.AUC_IGNORE_TIES
+                self.split_rule_ = 3  # spruce_.SplitRule.AUC_IGNORE_TIES
             elif self.split_rule == "maxstat":
-                self.split_rule_ = 4  # ranger_.SplitRule.MAXSTAT
+                self.split_rule_ = 4  # spruce_.SplitRule.MAXSTAT
             else:
                 raise ValueError(
                     "split rule must be either logrank, extratrees, C or maxstat"
@@ -148,21 +148,21 @@ class RangerMixin:
         """Set the importance mode based on ``importance`` and ``local_importance``."""
         # Note IMP_PERM_LIAW is unused
         if self.importance is None or self.importance == "none":
-            self.importance_mode_ = 0  # ranger_.ImportanceMode.IMP_NONE
+            self.importance_mode_ = 0  # spruce_.ImportanceMode.IMP_NONE
         elif self.importance == "impurity":
-            self.importance_mode_ = 1  # ranger_.ImportanceMode.IMP_GINI
+            self.importance_mode_ = 1  # spruce_.ImportanceMode.IMP_GINI
         elif (
             self.importance == "impurity_corrected"
             or self.importance == "impurity_unbiased"
         ):
-            self.importance_mode_ = 5  # ranger_.ImportanceMode.IMP_GINI_CORRECTED
+            self.importance_mode_ = 5  # spruce_.ImportanceMode.IMP_GINI_CORRECTED
         elif self.importance == "permutation":
             if self.local_importance:
-                self.importance_mode_ = 6  # ranger_.ImportanceMode.IMP_PERM_CASEWISE
+                self.importance_mode_ = 6  # spruce_.ImportanceMode.IMP_PERM_CASEWISE
             elif self.scale_permutation_importance:
-                self.importance_mode_ = 2  # ranger_.ImportanceMode.IMP_PERM_BREIMAN
+                self.importance_mode_ = 2  # spruce_.ImportanceMode.IMP_PERM_BREIMAN
             else:
-                self.importance_mode_ = 3  # ranger_.ImportanceMode.IMP_PERM_RAW
+                self.importance_mode_ = 3  # spruce_.ImportanceMode.IMP_PERM_RAW
         else:
             raise ValueError("unkown importance mode")
 
@@ -180,7 +180,7 @@ class RangerMixin:
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
             use_sample_weight = True
-            # ranger does additional rng on samples if weights are passed.
+            # spruce does additional rng on samples if weights are passed.
             # if the weights are ones, then we dont want that extra rng.
             if np.array_equal(np.unique(sample_weight), np.array([1.0])):
                 sample_weight = []
@@ -250,7 +250,7 @@ class RangerMixin:
             for idx, node in enumerate(tree):
                 tree_weights.append(sum(node))
             weights.append(tree_weights)
-        self.ranger_forest_["forest"]["leaf_weights"] = weights
+        self.spruce_forest_["forest"]["leaf_weights"] = weights
 
     def _get_sample_values(self, values):
         """Map the leaf samples to corresponding values.
@@ -260,7 +260,7 @@ class RangerMixin:
         or sample weights.
         """
         mapped_values = []
-        for tree in self.ranger_forest_["forest"]["leaf_samples"]:
+        for tree in self.spruce_forest_["forest"]["leaf_samples"]:
             mapped_values.append([])
             for node in tree:
                 mapped_values[-1].append([values[idx] for idx in node])
@@ -286,10 +286,10 @@ class RangerMixin:
         forest_values = self._get_sample_values(y)
         forest_weights = self._get_sample_values(sample_weight)
         self._set_sample_weights(forest_weights)
-        self.ranger_forest_["forest"]["node_values"] = []
-        for idx in range(self.ranger_forest_["num_trees"]):
-            left = self.ranger_forest_["forest"]["child_node_ids"][idx][0]
-            right = self.ranger_forest_["forest"]["child_node_ids"][idx][1]
+        self.spruce_forest_["forest"]["node_values"] = []
+        for idx in range(self.spruce_forest_["num_trees"]):
+            left = self.spruce_forest_["forest"]["child_node_ids"][idx][0]
+            right = self.spruce_forest_["forest"]["child_node_ids"][idx][1]
             root = 0
             values = forest_values[idx]
             self._get_values(
@@ -317,12 +317,12 @@ class RangerMixin:
                     np.average(v, weights=w, axis=0) if v else np.nan
                     for v, w in zip(values, weights)
                 ]
-            self.ranger_forest_["forest"]["node_values"].append(values)
+            self.spruce_forest_["forest"]["node_values"].append(values)
 
     def _set_n_classes(self):
         """Set num classes for ``Tree.n_classes``."""
         # for accessing in Tree
-        self.ranger_forest_["n_classes"] = getattr(self, "n_classes_", 1)
+        self.spruce_forest_["n_classes"] = getattr(self, "n_classes_", 1)
 
     def _set_leaf_samples(self, terminal_nodes):
         """Set the leaf samples using the terminal nodes.
@@ -335,12 +335,12 @@ class RangerMixin:
         """
         leaf_samples = []
         for tree_idx, tree in enumerate(terminal_nodes.T):
-            n_nodes = len(self.ranger_forest_["forest"]["child_node_ids"][tree_idx][0])
+            n_nodes = len(self.spruce_forest_["forest"]["child_node_ids"][tree_idx][0])
             tree_leaf_samples = [[] for _ in range(n_nodes)]
             for record_idx, terminal_node in enumerate(tree):
                 tree_leaf_samples[terminal_node].append(record_idx)
             leaf_samples.append(tree_leaf_samples)
-        self.ranger_forest_["forest"]["leaf_samples"] = leaf_samples
+        self.spruce_forest_["forest"]["leaf_samples"] = leaf_samples
 
     def _get_terminal_node_forest(self, X):
         """Get a terminal node forest for X.
@@ -355,7 +355,7 @@ class RangerMixin:
         :param array2d X: prediction input features
         """
         # many fields defaulted here which are unused
-        forest = ranger.ranger(
+        forest = spruce.spruce(
             self.tree_type_,
             np.asfortranarray(X.astype("float64")),
             np.asfortranarray([[]]),
@@ -373,7 +373,7 @@ class RangerMixin:
             [],  # always_split_feature_names
             False,  # use_always_split_feature_names
             True,  # prediction_mode
-            self.ranger_forest_["forest"],  # loaded_forest
+            self.spruce_forest_["forest"],  # loaded_forest
             True,  # sample_with_replacement
             False,  # probability
             [],  # unordered_feature_names

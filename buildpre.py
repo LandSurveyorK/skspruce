@@ -2,20 +2,20 @@ import os
 import shutil
 
 top = os.path.dirname(os.path.abspath(__file__))
-src = os.path.join(top, "ranger", "cpp_version")
-dst = os.path.join(top, "skranger", "ranger")
+src = os.path.join(top, "spruce", "cpp_version")
+dst = os.path.join(top, "skspruce", "spruce")
 
 
-def copy_ranger_source():
-    """Copy the ranger cpp source, following symlinks."""
+def copy_spruce_source():
+    """Copy the spruce cpp source, following symlinks."""
     shutil.rmtree(dst, ignore_errors=True)
     shutil.copytree(src, dst, symlinks=False)
 
 
-def disambiguate_ranger_make_unique():
-    """Rewrite ranger calls to ``make_unique``.
+def disambiguate_spruce_make_unique():
+    """Rewrite spruce calls to ``make_unique``.
 
-    This enables us to compile on Windows by ensuring we call ``ranger::make_unique``
+    This enables us to compile on Windows by ensuring we call ``spruce::make_unique``
     explicitly via the namespace. This removes ambiguity since windows compiles with
     C++14 which is when ``make_unique`` was added to ``std``.
     """
@@ -25,10 +25,10 @@ def disambiguate_ranger_make_unique():
             if file != "utility.h":
                 with open(os.path.join(root, file), "r") as f:
                     contents = f.read()
-                contents = contents.replace("make_unique", "ranger::make_unique")
+                contents = contents.replace("make_unique", "spruce::make_unique")
                 with open(os.path.join(root, file), "w") as f:
                     f.write(contents)
 
 
-copy_ranger_source()
-disambiguate_ranger_make_unique()
+copy_spruce_source()
+disambiguate_spruce_make_unique()

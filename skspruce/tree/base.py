@@ -1,15 +1,15 @@
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 
-from skranger.base import RangerMixin
-from skranger.tree._tree import Tree
+from skspruce.base import SpruceMixin
+from skspruce.tree._tree import Tree
 
 
-class BaseRangerTree(RangerMixin, BaseEstimator):
+class BaseSpruceTree(SpruceMixin, BaseEstimator):
     @property
     def tree_(self):
         check_is_fitted(self)
-        return Tree(ranger_forest=self.ranger_forest_)
+        return Tree(spruce_forest=self.spruce_forest_)
 
     def get_depth(self):
         """Calculate the maximum depth of the tree."""

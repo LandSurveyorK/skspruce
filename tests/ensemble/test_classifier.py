@@ -12,16 +12,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.validation import check_is_fitted
 
-from skranger.ensemble import RangerForestClassifier
-from skranger.tree import RangerTreeClassifier
+from skranger.ensemble import SpruceForestClassifier
+from skranger.tree import SpruceTreeClassifier
 
 
-class TestRangerForestClassifier:
+class TestSpruceForestClassifier:
     def test_init(self):
-        _ = RangerForestClassifier()
+        _ = SpruceForestClassifier()
 
     def test_fit(self, iris_X, iris_y):
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         with pytest.raises(NotFittedError):
             check_is_fitted(forest)
         forest.fit(iris_X, iris_y)
@@ -33,7 +33,7 @@ class TestRangerForestClassifier:
         assert hasattr(forest, "n_features_in_")
 
     def test_predict(self, iris_X, iris_y):
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y)
         pred = forest.predict(iris_X)
         assert len(pred) == iris_X.shape[0]
@@ -44,7 +44,7 @@ class TestRangerForestClassifier:
         assert len(pred) == 1
 
     def test_predict_proba(self, iris_X, iris_y):
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y)
         pred = forest.predict_proba(iris_X)
         assert len(pred) == iris_X.shape[0]
@@ -55,7 +55,7 @@ class TestRangerForestClassifier:
         assert len(pred) == 1
 
     def test_predict_log_proba(self, iris_X, iris_y):
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y)
         pred = forest.predict_log_proba(iris_X)
         assert len(pred) == iris_X.shape[0]
@@ -67,7 +67,7 @@ class TestRangerForestClassifier:
 
     def test_serialize(self, iris_X, iris_y):
         tf = tempfile.TemporaryFile()
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y)
         pickle.dump(forest, tf)
         tf.seek(0)
@@ -76,12 +76,12 @@ class TestRangerForestClassifier:
         assert len(pred) == iris_X.shape[0]
 
     def test_clone(self, iris_X, iris_y):
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y)
         clone(forest)
 
     def test_verbose(self, iris_X, iris_y, verbose, capfd):
-        forest = RangerForestClassifier(verbose=verbose)
+        forest = SpruceForestClassifier(verbose=verbose)
         forest.fit(iris_X, iris_y)
         captured = capfd.readouterr()
         if verbose:
@@ -92,7 +92,7 @@ class TestRangerForestClassifier:
     def test_importance(
         self, iris_X, iris_y, importance, scale_permutation_importance, local_importance
     ):
-        forest = RangerForestClassifier(
+        forest = SpruceForestClassifier(
             importance=importance,
             scale_permutation_importance=scale_permutation_importance,
             local_importance=local_importance,
@@ -119,7 +119,7 @@ class TestRangerForestClassifier:
                 assert forest.importance_mode_ == 3
 
     def test_importance_pvalues(self, iris_X_mod, iris_y, importance, mod):
-        forest = RangerForestClassifier(importance=importance)
+        forest = SpruceForestClassifier(importance=importance)
         np.random.seed(42)
 
         if importance not in ["none", "impurity", "impurity_corrected", "permutation"]:
@@ -144,7 +144,7 @@ class TestRangerForestClassifier:
         assert len(forest.get_importance_pvalues()) == iris_X_mod.shape[1]
 
     def test_mtry(self, iris_X, iris_y, mtry):
-        forest = RangerForestClassifier(mtry=mtry)
+        forest = SpruceForestClassifier(mtry=mtry)
 
         if callable(mtry) and mtry(5) > 5:
             with pytest.raises(ValueError):
@@ -163,29 +163,29 @@ class TestRangerForestClassifier:
 
     def test_inbag(self, iris_X, iris_y):
         inbag = [[1, 2, 3], [2, 3, 4]]
-        forest = RangerForestClassifier(n_estimators=2, inbag=inbag)
+        forest = SpruceForestClassifier(n_estimators=2, inbag=inbag)
         forest.fit(iris_X, iris_y)
 
         # inbag list different length from n_estimators
-        forest = RangerForestClassifier(n_estimators=1, inbag=inbag)
+        forest = SpruceForestClassifier(n_estimators=1, inbag=inbag)
         with pytest.raises(ValueError):
             forest.fit(iris_X, iris_y)
 
         # can't use inbag with sample weight
-        forest = RangerForestClassifier(inbag=inbag)
+        forest = SpruceForestClassifier(inbag=inbag)
         with pytest.raises(ValueError):
             forest.fit(iris_X, iris_y, sample_weight=[1] * len(iris_y))
 
         # can't use class sampling and inbag
-        forest = RangerForestClassifier(inbag=inbag, sample_fraction=[1, 1])
+        forest = SpruceForestClassifier(inbag=inbag, sample_fraction=[1, 1])
         with pytest.raises(ValueError):
             forest.fit(iris_X, iris_y)
 
     def test_sample_fraction(self, iris_X, iris_y):
-        forest = RangerForestClassifier(sample_fraction=[0.69])
+        forest = SpruceForestClassifier(sample_fraction=[0.69])
         forest.fit(iris_X, iris_y)
         assert forest.sample_fraction_ == [0.69]
-        forest = RangerForestClassifier(sample_fraction=0.69)
+        forest = SpruceForestClassifier(sample_fraction=0.69)
         forest.fit(iris_X, iris_y)
         assert forest.sample_fraction_ == [0.69]
 
@@ -199,7 +199,7 @@ class TestRangerForestClassifier:
         assert len(pred) == 1
 
     def test_sample_fraction_replace(self, iris_X, iris_y, replace):
-        forest = RangerForestClassifier(replace=replace)
+        forest = SpruceForestClassifier(replace=replace)
         forest.fit(iris_X, iris_y)
 
         if replace:
@@ -215,7 +215,7 @@ class TestRangerForestClassifier:
         iris_X_c = np.hstack((iris_X, categorical_col.transpose()))
         categorical_features = [iris_X.shape[1]]
 
-        forest = RangerForestClassifier(
+        forest = SpruceForestClassifier(
             respect_categorical_features=respect_categorical_features,
         )
 
@@ -228,7 +228,7 @@ class TestRangerForestClassifier:
         forest.predict(iris_X_c)
 
     def test_split_rule(self, iris_X, iris_y, split_rule):
-        forest = RangerForestClassifier(split_rule=split_rule)
+        forest = SpruceForestClassifier(split_rule=split_rule)
         assert forest.criterion == split_rule
 
         if split_rule not in ["gini", "extratrees", "hellinger"]:
@@ -252,7 +252,7 @@ class TestRangerForestClassifier:
             assert forest.split_rule_ == 7
 
         if split_rule == "extratrees":
-            forest = RangerForestClassifier(
+            forest = SpruceForestClassifier(
                 split_rule=split_rule,
                 respect_categorical_features="partition",
                 save_memory=True,
@@ -260,7 +260,7 @@ class TestRangerForestClassifier:
             with pytest.raises(ValueError):
                 forest.fit(iris_X, iris_y)
         else:
-            forest = RangerForestClassifier(split_rule=split_rule, num_random_splits=2)
+            forest = SpruceForestClassifier(split_rule=split_rule, num_random_splits=2)
             with pytest.raises(ValueError):
                 forest.fit(iris_X, iris_y)
 
@@ -268,7 +268,7 @@ class TestRangerForestClassifier:
         X_train, X_test, y_train, y_test = train_test_split(
             iris_X, iris_y, test_size=0.5, random_state=42
         )
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         weights = {
             0: 0.7,
             1: 0.2,
@@ -277,7 +277,7 @@ class TestRangerForestClassifier:
         forest.fit(X_train, y_train, class_weights=weights)
         forest.predict(X_test)
 
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         m = {0: "a", 1: "b", 2: "c"}
         y_train_str = [m.get(v) for v in y_train]
         weights = {
@@ -297,45 +297,45 @@ class TestRangerForestClassifier:
     def test_split_select_weights(self, iris_X, iris_y):
         n_trees = 10
         weights = [0.1] * iris_X.shape[1]
-        forest = RangerForestClassifier(n_estimators=n_trees)
+        forest = SpruceForestClassifier(n_estimators=n_trees)
         forest.fit(iris_X, iris_y, split_select_weights=weights)
 
         weights = [0.1] * (iris_X.shape[1] - 1)
-        forest = RangerForestClassifier(n_estimators=n_trees)
+        forest = SpruceForestClassifier(n_estimators=n_trees)
 
         with pytest.raises(RuntimeError):
             forest.fit(iris_X, iris_y, split_select_weights=weights)
 
         weights = [[0.1] * (iris_X.shape[1])] * n_trees
-        forest = RangerForestClassifier(n_estimators=n_trees)
+        forest = SpruceForestClassifier(n_estimators=n_trees)
         forest.fit(iris_X, iris_y, split_select_weights=weights)
 
         weights = [[0.1] * (iris_X.shape[1])] * (n_trees + 1)
-        forest = RangerForestClassifier(n_estimators=n_trees)
+        forest = SpruceForestClassifier(n_estimators=n_trees)
         with pytest.raises(RuntimeError):
             forest.fit(iris_X, iris_y, split_select_weights=weights)
 
     def test_regularization(self, iris_X, iris_y):
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y)
         assert forest.regularization_factor_ == []
         assert not forest.use_regularization_factor_
 
         # vector must be between 0 and 1 and length matching feature num
         for r in [[1.1], [-0.1], [1, 1]]:
-            forest = RangerForestClassifier(regularization_factor=r)
+            forest = SpruceForestClassifier(regularization_factor=r)
             with pytest.raises(ValueError):
                 forest.fit(iris_X, iris_y)
 
         # vector of ones isn't applied
-        forest = RangerForestClassifier(regularization_factor=[1] * iris_X.shape[1])
+        forest = SpruceForestClassifier(regularization_factor=[1] * iris_X.shape[1])
         forest.fit(iris_X, iris_y)
         assert forest.regularization_factor_ == []
         assert not forest.use_regularization_factor_
 
         # regularization vector is used
         reg = [0.5]
-        forest = RangerForestClassifier(regularization_factor=reg, n_jobs=2)
+        forest = SpruceForestClassifier(regularization_factor=reg, n_jobs=2)
         # warns if n_jobs is not one since parallelization can't be used
         with pytest.warns(Warning):
             forest.fit(iris_X, iris_y)
@@ -344,7 +344,7 @@ class TestRangerForestClassifier:
         assert forest.use_regularization_factor_
 
     def test_always_split_features(self, iris_X, iris_y):
-        forest = RangerForestClassifier()
+        forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y, always_split_features=[0])
         # feature 0 is in every tree split
         for tree in forest.ranger_forest_["forest"]["split_var_ids"]:
@@ -362,7 +362,7 @@ class TestRangerForestClassifier:
         rf_acc = accuracy_score(y_test, y_pred_rf)
 
         # train and test a ranger classifier
-        ra = RangerForestClassifier()
+        ra = SpruceForestClassifier()
         ra.fit(X_train, y_train)
         y_pred_ra = ra.predict(X_test)
         ranger_acc = accuracy_score(y_test, y_pred_ra)
@@ -372,7 +372,7 @@ class TestRangerForestClassifier:
         assert ranger_acc > 0.9
 
     def test_feature_importances_(self, iris_X, iris_y, importance, local_importance):
-        forest = RangerForestClassifier(
+        forest = SpruceForestClassifier(
             importance=importance, local_importance=local_importance
         )
         with pytest.raises(AttributeError):
@@ -391,33 +391,33 @@ class TestRangerForestClassifier:
             assert len(forest.feature_importances_) == iris_X.shape[1]
 
     def test_estimators_(self, iris_X, iris_y):
-        forest = RangerForestClassifier(n_estimators=10)
+        forest = SpruceForestClassifier(n_estimators=10)
         with pytest.raises(AttributeError):
             _ = forest.estimators_
         forest.fit(iris_X, iris_y)
         with pytest.raises(ValueError):
             _ = forest.estimators_
-        forest = RangerForestClassifier(n_estimators=10, enable_tree_details=True)
+        forest = SpruceForestClassifier(n_estimators=10, enable_tree_details=True)
         forest.fit(iris_X, iris_y)
         estimators = forest.estimators_
         assert len(estimators) == 10
-        assert isinstance(estimators[0], RangerTreeClassifier)
+        assert isinstance(estimators[0], SpruceTreeClassifier)
         check_is_fitted(estimators[0])
 
     def test_get_estimator(self, iris_X, iris_y):
-        forest = RangerForestClassifier(n_estimators=10)
+        forest = SpruceForestClassifier(n_estimators=10)
         with pytest.raises(NotFittedError):
             _ = forest.get_estimator(idx=0)
         forest.fit(iris_X, iris_y)
         with pytest.raises(ValueError):
             _ = forest.get_estimator(0)
-        forest = RangerForestClassifier(n_estimators=10, enable_tree_details=True)
+        forest = SpruceForestClassifier(n_estimators=10, enable_tree_details=True)
         forest.fit(iris_X, iris_y)
         estimator = forest.get_estimator(0)
         estimator.predict(iris_X)
-        assert isinstance(estimator, RangerTreeClassifier)
+        assert isinstance(estimator, SpruceTreeClassifier)
         with pytest.raises(IndexError):
             _ = forest.get_estimator(idx=20)
 
     def test_check_estimator(self):
-        check_estimator(RangerForestClassifier())
+        check_estimator(SpruceForestClassifier())

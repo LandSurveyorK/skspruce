@@ -26,7 +26,7 @@ if os.environ.get("READTHEDOCS"):
 
 # -- Project information -----------------------------------------------------
 
-project = "skranger"
+project = "skspruce"
 copyright = "2020-2021, Christopher Flynn"
 author = "Christopher Flynn"
 

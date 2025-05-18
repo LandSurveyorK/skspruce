@@ -1,4 +1,4 @@
-"""Cython implementation for ranger and Data child classes."""
+"""Cython implementation for spruce and Data child classes."""
 import sys
 
 import cython
@@ -12,17 +12,17 @@ from libcpp.string cimport string
 from libcpp.utility cimport move
 from libcpp.vector cimport vector
 
-from skranger cimport ranger_
+from skspruce cimport spruce_
 
 
 cdef class DataNumpy:
     """Cython wrapper for DataNumpy C++ class in ``DataNumpy.h``.
 
     This wraps the Data class in C++, which encapsulates training data passed to the
-    random forest classes. It allows us to pass numpy arrays as a ranger-compatible
+    random forest classes. It allows us to pass numpy arrays as a spruce-compatible
     Data object.
     """
-    cdef unique_ptr[ranger_.DataNumpy] c_data
+    cdef unique_ptr[spruce_.DataNumpy] c_data
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -35,7 +35,7 @@ cdef class DataNumpy:
         cdef size_t num_cols = np.PyArray_DIMS(x)[1]
         cdef size_t num_cols_y = np.PyArray_DIMS(y)[1]
         self.c_data.reset(
-            new ranger_.DataNumpy(
+            new spruce_.DataNumpy(
                 &x[0, 0],
                 &y[0, 0],
                 variable_names,
@@ -61,8 +61,8 @@ cdef class DataNumpy:
         return deref(self.c_data).set_y(col, row, value, error)
 
 
-cpdef dict ranger(
-    ranger_.TreeType treetype,
+cpdef dict spruce(
+    spruce_.TreeType treetype,
     np.ndarray[double, ndim=2, mode="fortran"] x,
     np.ndarray[double, ndim=2, mode="fortran"] y,
     vector[string]& variable_names,
@@ -72,7 +72,7 @@ cpdef dict ranger(
     unsigned int seed,
     unsigned int num_threads,
     bool write_forest,
-    ranger_.ImportanceMode importance_mode,
+    spruce_.ImportanceMode importance_mode,
     unsigned int min_node_size,
     vector[vector[double]]& split_select_weights,
     bool use_split_select_weights,
@@ -85,7 +85,7 @@ cpdef dict ranger(
     vector[string]& unordered_variable_names,
     bool use_unordered_variable_names,
     bool save_memory,
-    ranger_.SplitRule splitrule,
+    spruce_.SplitRule splitrule,
     vector[double]& case_weights,
     bool use_case_weights,
     dict class_weights,
@@ -95,7 +95,7 @@ cpdef dict ranger(
     double alpha,
     double minprop,
     bool holdout,
-    ranger_.PredictionType prediction_type,
+    spruce_.PredictionType prediction_type,
     unsigned int num_random_splits,
     bool oob_error,
     unsigned int max_depth,
@@ -105,10 +105,10 @@ cpdef dict ranger(
     bool use_regularization_factor,
     bool regularization_usedepth,
 ):
-    """Cython function interface to ranger.
+    """Cython function interface to spruce.
     
-    Provides an entrypoint into the ranger C++ code, and returns a result object
-    with ranger-specific random forest implementation objects for serializing and
+    Provides an entrypoint into the spruce C++ code, and returns a result object
+    with spruce-specific random forest implementation objects for serializing and
     deserializing random forests. The result object is a python dictionary containing
     forest structures, metadata, and predictions (if in prediction mode). The structure
     of results is (depending on forest type):
@@ -140,9 +140,9 @@ cpdef dict ranger(
     # print(locals())
     result = {}
 
-    cdef unique_ptr[ranger_.Forest] forest
+    cdef unique_ptr[spruce_.Forest] forest
 
-    cdef ranger_.ostream* verbose_out
+    cdef spruce_.ostream* verbose_out
 
     cdef vector[vector[vector[size_t]]] child_node_ids
     cdef vector[vector[size_t]] split_var_ids
@@ -170,23 +170,23 @@ cpdef dict ranger(
             regularization_factor.clear()
 
         if verbose:
-            verbose_out = <ranger_.ostream*> &ranger_.cout
+            verbose_out = <spruce_.ostream*> &spruce_.cout
         else:
-            verbose_out = <ranger_.ostream*> new ranger_.stringstream()
+            verbose_out = <spruce_.ostream*> new spruce_.stringstream()
 
         data = DataNumpy(x, y, variable_names)
 
-        if treetype == ranger_.TreeType.TREE_CLASSIFICATION:
+        if treetype == spruce_.TreeType.TREE_CLASSIFICATION:
             if probability:
-                forest.reset(new ranger_.ForestProbability())
+                forest.reset(new spruce_.ForestProbability())
             else:
-                forest.reset(new ranger_.ForestClassification())
-        elif treetype == ranger_.TreeType.TREE_REGRESSION:
-            forest.reset(new ranger_.ForestRegression())
-        elif treetype == ranger_.TreeType.TREE_SURVIVAL:
-            forest.reset(new ranger_.ForestSurvival())
-        elif treetype == ranger_.TreeType.TREE_PROBABILITY:
-            forest.reset(new ranger_.ForestProbability())
+                forest.reset(new spruce_.ForestClassification())
+        elif treetype == spruce_.TreeType.TREE_REGRESSION:
+            forest.reset(new spruce_.ForestRegression())
+        elif treetype == spruce_.TreeType.TREE_SURVIVAL:
+            forest.reset(new spruce_.ForestSurvival())
+        elif treetype == spruce_.TreeType.TREE_PROBABILITY:
+            forest.reset(new spruce_.ForestProbability())
 
         deref(forest).initR(
             move(data.c_data),
@@ -226,36 +226,36 @@ cpdef dict ranger(
             split_values = loaded_forest["split_values"]
             is_ordered = loaded_forest["is_ordered"]
 
-            if treetype == ranger_.TreeType.TREE_CLASSIFICATION:
+            if treetype == spruce_.TreeType.TREE_CLASSIFICATION:
                 class_values = loaded_forest["class_values"]
-                (<ranger_.ForestClassification*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, class_values, is_ordered)
-            elif treetype == ranger_.TreeType.TREE_REGRESSION:
-                (<ranger_.ForestRegression*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, is_ordered)
-            elif treetype == ranger_.TreeType.TREE_SURVIVAL:
+                (<spruce_.ForestClassification*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, class_values, is_ordered)
+            elif treetype == spruce_.TreeType.TREE_REGRESSION:
+                (<spruce_.ForestRegression*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, is_ordered)
+            elif treetype == spruce_.TreeType.TREE_SURVIVAL:
                 cumulative_hazard_function = loaded_forest["cumulative_hazard_function"]
                 unique_timepoints = loaded_forest["unique_death_times"]
-                (<ranger_.ForestSurvival*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, cumulative_hazard_function, unique_timepoints, is_ordered)
-            elif treetype == ranger_.TreeType.TREE_PROBABILITY:
+                (<spruce_.ForestSurvival*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, cumulative_hazard_function, unique_timepoints, is_ordered)
+            elif treetype == spruce_.TreeType.TREE_PROBABILITY:
                 class_values = loaded_forest["class_values"]
                 terminal_class_counts = loaded_forest["terminal_class_counts"]
-                (<ranger_.ForestProbability*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, class_values, terminal_class_counts, is_ordered)
+                (<spruce_.ForestProbability*> forest.get()).loadForest(num_trees, child_node_ids, split_var_ids, split_values, class_values, terminal_class_counts, is_ordered)
         else:
-            if treetype == ranger_.TreeType.TREE_CLASSIFICATION and len(class_weights) > 0:
-                class_values_ = (<ranger_.ForestClassification*> forest.get()).getClassValues()
+            if treetype == spruce_.TreeType.TREE_CLASSIFICATION and len(class_weights) > 0:
+                class_values_ = (<spruce_.ForestClassification*> forest.get()).getClassValues()
                 class_weights_ = []
                 for c in class_values_[:class_values_.size()]:
                     class_weights_.append(class_weights[int(c)])
-                (<ranger_.ForestClassification*> forest.get()).setClassWeights(class_weights_)
-            elif treetype == ranger_.TreeType.TREE_PROBABILITY and len(class_weights) > 0:
-                class_values_ = (<ranger_.ForestProbability*> forest.get()).getClassValues()
+                (<spruce_.ForestClassification*> forest.get()).setClassWeights(class_weights_)
+            elif treetype == spruce_.TreeType.TREE_PROBABILITY and len(class_weights) > 0:
+                class_values_ = (<spruce_.ForestProbability*> forest.get()).getClassValues()
                 class_weights_ = []
                 for c in class_values_[:class_values_.size()]:
                     class_weights_.append(class_weights[int(c)])
-                (<ranger_.ForestProbability*> forest.get()).setClassWeights(class_weights_)
+                (<spruce_.ForestProbability*> forest.get()).setClassWeights(class_weights_)
 
         deref(forest).run(verbose, oob_error)
 
-        if use_split_select_weights and importance_mode != ranger_.ImportanceMode.IMP_NONE:
+        if use_split_select_weights and importance_mode != spruce_.ImportanceMode.IMP_NONE:
             if verbose_out:
                 verbose_out.write("Warning: Split select weights used. Variable importance measures are only comparable for variables with equal weights.\n", 1)
 
@@ -270,14 +270,14 @@ cpdef dict ranger(
 
         result["num_trees"] = deref(forest).getNumTrees()
         result["num_independent_variables"] = deref(forest).getNumIndependentVariables()
-        if treetype == ranger_.TreeType.TREE_SURVIVAL:
-            result["unique_death_times"] = (<ranger_.ForestSurvival*> forest.get()).getUniqueTimepoints()
+        if treetype == spruce_.TreeType.TREE_SURVIVAL:
+            result["unique_death_times"] = (<spruce_.ForestSurvival*> forest.get()).getUniqueTimepoints()
         if not prediction_mode:
             result["mtry"] = deref(forest).getMtry()
             result["min_node_size"] = deref(forest).getMinNodeSize()
-            if importance_mode != ranger_.ImportanceMode.IMP_NONE:
+            if importance_mode != spruce_.ImportanceMode.IMP_NONE:
                 result["variable_importance"] = deref(forest).getVariableImportance()
-                if importance_mode == ranger_.ImportanceMode.IMP_PERM_CASEWISE:
+                if importance_mode == spruce_.ImportanceMode.IMP_PERM_CASEWISE:
                     result["variable_importance_local"] = deref(forest).getVariableImportanceCasewise()
             result["prediction_error"] = deref(forest).getOverallPredictionError()
 
@@ -293,17 +293,17 @@ cpdef dict ranger(
                 "is_ordered": deref(forest).getIsOrderedVariable()
             }
 
-            if treetype == ranger_.TreeType.TREE_CLASSIFICATION:
-                class_values_ = (<ranger_.ForestClassification*> forest.get()).getClassValues()
+            if treetype == spruce_.TreeType.TREE_CLASSIFICATION:
+                class_values_ = (<spruce_.ForestClassification*> forest.get()).getClassValues()
                 forest_object["class_values"] = []
                 for c in class_values_[:class_values_.size()]:
                     forest_object["class_values"].append(c)
-            elif treetype == ranger_.TreeType.TREE_PROBABILITY:
-                forest_object["class_values"] = (<ranger_.ForestProbability*> forest.get()).getClassValues()
-                forest_object["terminal_class_counts"] = (<ranger_.ForestProbability*> forest.get()).getTerminalClassCounts()
-            elif treetype == ranger_.TreeType.TREE_SURVIVAL:
-                forest_object["cumulative_hazard_function"] = (<ranger_.ForestSurvival*> forest.get()).getChf()
-                forest_object["unique_death_times"] = (<ranger_.ForestSurvival*> forest.get()).getUniqueTimepoints()
+            elif treetype == spruce_.TreeType.TREE_PROBABILITY:
+                forest_object["class_values"] = (<spruce_.ForestProbability*> forest.get()).getClassValues()
+                forest_object["terminal_class_counts"] = (<spruce_.ForestProbability*> forest.get()).getTerminalClassCounts()
+            elif treetype == spruce_.TreeType.TREE_SURVIVAL:
+                forest_object["cumulative_hazard_function"] = (<spruce_.ForestSurvival*> forest.get()).getChf()
+                forest_object["unique_death_times"] = (<spruce_.ForestSurvival*> forest.get()).getUniqueTimepoints()
             result["forest"] = forest_object
 
         if not verbose:

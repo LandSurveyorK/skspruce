@@ -11,24 +11,24 @@ from sklearn.tree._tree import csr_matrix
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.validation import check_is_fitted
 
-from skranger.tree.regressor import RangerTreeRegressor
+from skspruce.tree.regressor import SpruceTreeRegressor
 
 
-class TestRangerTreeRegressor:
+class TestSpruceTreeRegressor:
     def test_init(self):
-        _ = RangerTreeRegressor()
+        _ = SpruceTreeRegressor()
 
     def test_fit(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         with pytest.raises(NotFittedError):
             check_is_fitted(tree)
         tree.fit(boston_X, boston_y)
         check_is_fitted(tree)
-        assert hasattr(tree, "ranger_forest_")
+        assert hasattr(tree, "spruce_forest_")
         assert hasattr(tree, "n_features_in_")
 
     def test_predict(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         pred = tree.predict(boston_X)
         assert len(pred) == boston_X.shape[0]
@@ -40,7 +40,7 @@ class TestRangerTreeRegressor:
 
     def test_serialize(self, boston_X, boston_y):
         tf = tempfile.TemporaryFile()
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         pickle.dump(tree, tf)
         tf.seek(0)
@@ -49,12 +49,12 @@ class TestRangerTreeRegressor:
         assert len(pred) == boston_X.shape[0]
 
     def test_clone(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         clone(tree)
 
     def test_verbose(self, boston_X, boston_y, verbose, capfd):
-        tree = RangerTreeRegressor(verbose=verbose)
+        tree = SpruceTreeRegressor(verbose=verbose)
         tree.fit(boston_X, boston_y)
         captured = capfd.readouterr()
         if verbose:
@@ -70,7 +70,7 @@ class TestRangerTreeRegressor:
         scale_permutation_importance,
         local_importance,
     ):
-        tree = RangerTreeRegressor(
+        tree = SpruceTreeRegressor(
             importance=importance,
             scale_permutation_importance=scale_permutation_importance,
             local_importance=local_importance,
@@ -97,7 +97,7 @@ class TestRangerTreeRegressor:
                 assert tree.importance_mode_ == 3
 
     def test_mtry(self, boston_X, boston_y, mtry):
-        tree = RangerTreeRegressor(mtry=mtry)
+        tree = SpruceTreeRegressor(mtry=mtry)
 
         if callable(mtry) and mtry(5) > 5:
             with pytest.raises(ValueError):
@@ -116,21 +116,21 @@ class TestRangerTreeRegressor:
 
     def test_inbag(self, boston_X, boston_y):
         inbag = [[1, 2, 3]]
-        tree = RangerTreeRegressor(inbag=inbag)
+        tree = SpruceTreeRegressor(inbag=inbag)
         tree.fit(boston_X, boston_y)
 
         # can't use inbag with sample weight
-        tree = RangerTreeRegressor(inbag=inbag)
+        tree = SpruceTreeRegressor(inbag=inbag)
         with pytest.raises(ValueError):
             tree.fit(boston_X, boston_y, sample_weight=[1] * len(boston_y))
 
         # can't use class sampling and inbag
-        tree = RangerTreeRegressor(inbag=inbag, sample_fraction=[1, 1])
+        tree = SpruceTreeRegressor(inbag=inbag, sample_fraction=[1, 1])
         with pytest.raises(ValueError):
             tree.fit(boston_X, boston_y)
 
     def test_sample_fraction(self, boston_X, boston_y):
-        tree = RangerTreeRegressor(sample_fraction=0.69)
+        tree = SpruceTreeRegressor(sample_fraction=0.69)
         tree.fit(boston_X, boston_y)
         assert tree.sample_fraction_ == [0.69]
 
@@ -140,7 +140,7 @@ class TestRangerTreeRegressor:
         assert len(pred) == 1
 
     def test_sample_fraction_replace(self, boston_X, boston_y, replace):
-        tree = RangerTreeRegressor(replace=replace)
+        tree = SpruceTreeRegressor(replace=replace)
         tree.fit(boston_X, boston_y)
 
         if replace:
@@ -158,7 +158,7 @@ class TestRangerTreeRegressor:
         boston_X_c = np.hstack((boston_X, categorical_col.transpose()))
         categorical_features = [boston_X.shape[1]]
 
-        tree = RangerTreeRegressor(
+        tree = SpruceTreeRegressor(
             respect_categorical_features=respect_categorical_features,
             categorical_features=categorical_features,
         )
@@ -172,7 +172,7 @@ class TestRangerTreeRegressor:
         tree.predict(boston_X_c)
 
     def test_split_rule(self, boston_X, boston_y, split_rule):
-        tree = RangerTreeRegressor(split_rule=split_rule)
+        tree = SpruceTreeRegressor(split_rule=split_rule)
         assert tree.criterion == split_rule
 
         if split_rule not in ["variance", "extratrees", "maxstat", "beta"]:
@@ -198,7 +198,7 @@ class TestRangerTreeRegressor:
             assert tree.split_rule_ == 6
 
         if split_rule == "extratrees":
-            tree = RangerTreeRegressor(
+            tree = SpruceTreeRegressor(
                 split_rule=split_rule,
                 respect_categorical_features="partition",
                 save_memory=True,
@@ -206,82 +206,82 @@ class TestRangerTreeRegressor:
             with pytest.raises(ValueError):
                 tree.fit(boston_X, boston_y)
         else:
-            tree = RangerTreeRegressor(split_rule=split_rule, num_random_splits=2)
+            tree = SpruceTreeRegressor(split_rule=split_rule, num_random_splits=2)
             with pytest.raises(ValueError):
                 tree.fit(boston_X, boston_y)
 
     def test_split_select_weights(self, boston_X, boston_y):
         n_trees = 1
         weights = [0.1] * boston_X.shape[1]
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y, split_select_weights=weights)
 
         weights = [0.1] * (boston_X.shape[1] - 1)
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
 
         with pytest.raises(RuntimeError):
             tree.fit(boston_X, boston_y, split_select_weights=weights)
 
         weights = [[0.1] * (boston_X.shape[1])] * n_trees
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y, split_select_weights=weights)
 
         weights = [[0.1] * (boston_X.shape[1])] * (n_trees + 1)
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         with pytest.raises(RuntimeError):
             tree.fit(boston_X, boston_y, split_select_weights=weights)
 
     def test_regularization(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         assert tree.regularization_factor_ == []
         assert not tree.use_regularization_factor_
 
         # vector must be between 0 and 1 and length matching feature num
         for r in [[1.1], [-0.1], [1, 1]]:
-            tree = RangerTreeRegressor(regularization_factor=r)
+            tree = SpruceTreeRegressor(regularization_factor=r)
             with pytest.raises(ValueError):
                 tree.fit(boston_X, boston_y)
 
         # vector of ones isn't applied
-        tree = RangerTreeRegressor(regularization_factor=[1] * boston_X.shape[1])
+        tree = SpruceTreeRegressor(regularization_factor=[1] * boston_X.shape[1])
         tree.fit(boston_X, boston_y)
         assert tree.regularization_factor_ == []
         assert not tree.use_regularization_factor_
 
         # regularization vector is used
         reg = [0.5]
-        tree = RangerTreeRegressor(regularization_factor=reg)
+        tree = SpruceTreeRegressor(regularization_factor=reg)
         tree.fit(boston_X, boston_y)
         assert tree.regularization_factor_ == reg
         assert tree.use_regularization_factor_
 
     def test_always_split_features(self, boston_X, boston_y):
-        tree = RangerTreeRegressor(always_split_features=[0])
+        tree = SpruceTreeRegressor(always_split_features=[0])
         tree.fit(boston_X, boston_y)
         # feature 0 is in every tree split
-        for tree in tree.ranger_forest_["forest"]["split_var_ids"]:
+        for tree in tree.spruce_forest_["forest"]["split_var_ids"]:
             assert 0 in tree
 
     def test_check_estimator(self):
-        check_estimator(RangerTreeRegressor())
+        check_estimator(SpruceTreeRegressor())
 
     def test_get_depth(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         depth = tree.get_depth()
         assert isinstance(depth, int)
         assert depth > 0
 
     def test_get_n_leaves(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         leaves = tree.get_n_leaves()
         assert isinstance(leaves, int)
         assert np.all(leaves > 0)
 
     def test_apply(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         leaves = tree.apply(boston_X)
         assert isinstance(leaves, np.ndarray)
@@ -289,14 +289,14 @@ class TestRangerTreeRegressor:
         assert len(leaves) == len(boston_X)
 
     def test_decision_path(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         paths = tree.decision_path(boston_X)
         assert isinstance(paths, csr_matrix)
         assert paths.shape[0] == len(boston_X)
 
     def test_tree_interface(self, boston_X, boston_y):
-        tree = RangerTreeRegressor()
+        tree = SpruceTreeRegressor()
         tree.fit(boston_X, boston_y)
         # access attributes the way we would expect to in sklearn
         tree_ = tree.tree_

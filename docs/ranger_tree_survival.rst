@@ -1,6 +1,6 @@
-Ranger Tree Survival
+spruce Tree Survival
 ====================
 
-.. autoclass:: skranger.tree.RangerTreeSurvival
+.. autoclass:: skspruce.tree.spruceTreeSurvival
     :members:
     :inherited-members:

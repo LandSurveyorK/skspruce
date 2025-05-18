@@ -1,21 +1,21 @@
 [tool.poetry]
-name = "skranger"
+name = "skspruce"
 version = "0.8.0"
-description = "Python bindings for C++ ranger random forests"
+description = "Python bindings for C++ spruce random forests"
 authors = ["Flynn <crf204@gmail.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.rst"
-homepage = "https://github.com/crflynn/skranger"
-repository = "https://github.com/crflynn/skranger"
-documentation = "https://github.com/crflynn/skranger"
+homepage = "https://github.com/crflynn/skspruce"
+repository = "https://github.com/crflynn/skspruce"
+documentation = "https://github.com/crflynn/skspruce"
 include = [
-    { path="skranger/ranger/**/*" },
+    { path="skspruce/spruce/**/*" },
     { path="CHANGELOG.rst", format="sdist" },
     { path="LICENSE.txt", format="sdist" },
     { path="README.rst", format="sdist" },
 ]
 build = "build.py"
-keywords = ["random", "forest", "ranger", "machine", "learning"]
+keywords = ["random", "forest", "spruce", "machine", "learning"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",

@@ -11,8 +11,8 @@ class Tree:
     tree.
     """
 
-    def __init__(self, *, ranger_forest):
-        self.ranger_forest = ranger_forest
+    def __init__(self, *, spruce_forest):
+        self.spruce_forest = spruce_forest
 
     @property
     def node_count(self):
@@ -27,22 +27,22 @@ class Tree:
     @property
     def children_left(self):
         """Left children nodes."""
-        # sklearn uses -1, ranger uses 0
+        # sklearn uses -1, spruce uses 0
         return np.array(
             [
                 -1 if n == 0 else n
-                for n in self.ranger_forest["forest"]["child_node_ids"][0][0]
+                for n in self.spruce_forest["forest"]["child_node_ids"][0][0]
             ]
         )
 
     @property
     def children_right(self):
         """Right children nodes."""
-        # sklearn uses -1, ranger uses 0
+        # sklearn uses -1, spruce uses 0
         return np.array(
             [
                 -1 if n == 0 else n
-                for n in self.ranger_forest["forest"]["child_node_ids"][0][1]
+                for n in self.spruce_forest["forest"]["child_node_ids"][0][1]
             ]
         )
 
@@ -55,7 +55,7 @@ class Tree:
     @property
     def n_classes(self):
         """The quantity of classes."""
-        return np.array([self.ranger_forest["n_classes"]])
+        return np.array([self.spruce_forest["n_classes"]])
 
     def get_depth(self):
         """Calculate the maximum depth of the tree."""
@@ -145,13 +145,13 @@ class Tree:
     @property
     def feature(self):
         """Variables on which nodes are split."""
-        # sklearn uses -2, ranger uses 0
+        # sklearn uses -2, spruce uses 0
         return np.array(
             [
                 -2 if n == 0 else v
                 for n, v in zip(
-                    self.ranger_forest["forest"]["child_node_ids"][0][0],
-                    self.ranger_forest["forest"]["split_var_ids"][0],
+                    self.spruce_forest["forest"]["child_node_ids"][0][0],
+                    self.spruce_forest["forest"]["split_var_ids"][0],
                 )
             ]
         )
@@ -159,13 +159,13 @@ class Tree:
     @property
     def threshold(self):
         """Threshold values on which nodes are split."""
-        # sklearn uses -2, ranger uses 0
+        # sklearn uses -2, spruce uses 0
         return np.array(
             [
                 -2 if n == 0 else v
                 for n, v in zip(
-                    self.ranger_forest["forest"]["child_node_ids"][0][0],
-                    self.ranger_forest["forest"]["split_values"][0],
+                    self.spruce_forest["forest"]["child_node_ids"][0][0],
+                    self.spruce_forest["forest"]["split_values"][0],
                 )
             ]
         )
@@ -175,7 +175,7 @@ class Tree:
         """The number of samples reaching each node."""
         n_samples = [
             len(node) if node else 0
-            for node in self.ranger_forest["forest"]["leaf_samples"][0]
+            for node in self.spruce_forest["forest"]["leaf_samples"][0]
         ]
         self._get_n_node_samples(self.children_left, self.children_right, 0, n_samples)
         return np.array(n_samples)
@@ -197,7 +197,7 @@ class Tree:
     @property
     def weighted_n_node_samples(self):
         """The sum of the weights of the samples reaching each node."""
-        weighted_n_samples = self.ranger_forest["forest"]["leaf_weights"][0].copy()
+        weighted_n_samples = self.spruce_forest["forest"]["leaf_weights"][0].copy()
         self._get_n_node_samples(
             self.children_left,
             self.children_right,
@@ -209,5 +209,5 @@ class Tree:
     @property
     def value(self):
         """The constant prediction value of each node."""
-        values = self.ranger_forest["forest"]["node_values"][0]
+        values = self.spruce_forest["forest"]["node_values"][0]
         return np.reshape(values, (len(values), 1, self.n_classes[0]))

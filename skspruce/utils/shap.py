@@ -4,9 +4,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree._tree import Tree as SKTree
 
-from skranger.ensemble import RangerForestClassifier
-from skranger.ensemble import RangerForestRegressor
-from skranger.tree._tree import Tree
+from skspruce.ensemble import SpruceForestClassifier
+from skspruce.ensemble import SpruceForestRegressor
+from skspruce.tree._tree import Tree
 
 
 def _getclass(klass):
@@ -22,14 +22,14 @@ def _getclass(klass):
 
 @contextmanager
 def shap_patch():
-    """Trick shap into thinking skranger objects are sklearn objects."""
+    """Trick shap into thinking skspruce objects are sklearn objects."""
     tree_orig = Tree.__getattribute__
     Tree.__getattribute__ = _getclass(SKTree)
-    reg_orig = RangerForestRegressor.__getattribute__
-    RangerForestRegressor.__getattribute__ = _getclass(RandomForestRegressor)
-    cls_orig = RangerForestClassifier.__getattribute__
-    RangerForestClassifier.__getattribute__ = _getclass(RandomForestClassifier)
+    reg_orig = SpruceForestRegressor.__getattribute__
+    SpruceForestRegressor.__getattribute__ = _getclass(RandomForestRegressor)
+    cls_orig = SpruceForestClassifier.__getattribute__
+    SpruceForestClassifier.__getattribute__ = _getclass(RandomForestClassifier)
     yield
     Tree.__getattribute__ = tree_orig
-    RangerForestRegressor.__getattribute__ = reg_orig
-    RangerForestClassifier.__getattribute__ = cls_orig
+    SpruceForestRegressor.__getattribute__ = reg_orig
+    SpruceForestClassifier.__getattribute__ = cls_orig

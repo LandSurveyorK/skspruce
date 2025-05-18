@@ -10,26 +10,26 @@ from sklearn.tree._tree import csr_matrix
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.validation import check_is_fitted
 
-from skranger.tree import RangerTreeSurvival
+from skspruce.tree import SpruceTreeSurvival
 
 
-class TestRangerTreeSurvival:
+class TestSpruceTreeSurvival:
     def test_init(self):
-        _ = RangerTreeSurvival()
+        _ = SpruceTreeSurvival()
 
     def test_fit(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         with pytest.raises(NotFittedError):
             check_is_fitted(tree)
         tree.fit(lung_X, lung_y)
         check_is_fitted(tree)
         assert hasattr(tree, "event_times_")
         assert hasattr(tree, "cumulative_hazard_function_")
-        assert hasattr(tree, "ranger_forest_")
+        assert hasattr(tree, "spruce_forest_")
         assert hasattr(tree, "n_features_in_")
 
     def test_predict(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         pred = tree.predict(lung_X)
         assert len(pred) == lung_X.shape[0]
@@ -40,20 +40,20 @@ class TestRangerTreeSurvival:
         assert len(pred) == 1
 
     def test_predict_cumulative_hazard_function(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         pred = tree.predict_cumulative_hazard_function(lung_X)
         assert len(pred) == lung_X.shape[0]
 
     def test_predict_survival_function(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         pred = tree.predict_survival_function(lung_X)
         assert len(pred) == lung_X.shape[0]
 
     def test_serialize(self, lung_X, lung_y):
         tf = tempfile.TemporaryFile()
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         pickle.dump(tree, tf)
         tf.seek(0)
@@ -62,12 +62,12 @@ class TestRangerTreeSurvival:
         assert len(pred) == lung_X.shape[0]
 
     def test_clone(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         clone(tree)
 
     def test_verbose(self, lung_X, lung_y, verbose, capfd):
-        tree = RangerTreeSurvival(verbose=verbose)
+        tree = SpruceTreeSurvival(verbose=verbose)
         tree.fit(lung_X, lung_y)
         captured = capfd.readouterr()
         if verbose:
@@ -78,7 +78,7 @@ class TestRangerTreeSurvival:
     def test_importance(
         self, lung_X, lung_y, importance, scale_permutation_importance, local_importance
     ):
-        tree = RangerTreeSurvival(
+        tree = SpruceTreeSurvival(
             importance=importance,
             scale_permutation_importance=scale_permutation_importance,
             local_importance=local_importance,
@@ -105,7 +105,7 @@ class TestRangerTreeSurvival:
                 assert tree.importance_mode_ == 3
 
     def test_mtry(self, lung_X, lung_y, mtry):
-        tree = RangerTreeSurvival(mtry=mtry)
+        tree = SpruceTreeSurvival(mtry=mtry)
 
         if callable(mtry) and mtry(5) > 5:
             with pytest.raises(ValueError):
@@ -124,21 +124,21 @@ class TestRangerTreeSurvival:
 
     def test_inbag(self, lung_X, lung_y):
         inbag = [[1, 2, 3]]
-        tree = RangerTreeSurvival(inbag=inbag)
+        tree = SpruceTreeSurvival(inbag=inbag)
         tree.fit(lung_X, lung_y)
 
         # can't use inbag with sample weight
-        tree = RangerTreeSurvival(inbag=inbag)
+        tree = SpruceTreeSurvival(inbag=inbag)
         with pytest.raises(ValueError):
             tree.fit(lung_X, lung_y, sample_weight=[1] * len(lung_y))
 
         # can't use class sampling and inbag
-        tree = RangerTreeSurvival(inbag=inbag, sample_fraction=[1, 1])
+        tree = SpruceTreeSurvival(inbag=inbag, sample_fraction=[1, 1])
         with pytest.raises(ValueError):
             tree.fit(lung_X, lung_y)
 
     def test_sample_fraction(self, lung_X, lung_y):
-        tree = RangerTreeSurvival(sample_fraction=0.69)
+        tree = SpruceTreeSurvival(sample_fraction=0.69)
         tree.fit(lung_X, lung_y)
         assert tree.sample_fraction_ == [0.69]
 
@@ -148,7 +148,7 @@ class TestRangerTreeSurvival:
         assert len(pred) == 1
 
     def test_sample_fraction_replace(self, lung_X, lung_y, replace):
-        tree = RangerTreeSurvival(replace=replace)
+        tree = SpruceTreeSurvival(replace=replace)
         tree.fit(lung_X, lung_y)
 
         if replace:
@@ -164,7 +164,7 @@ class TestRangerTreeSurvival:
         lung_X_c = np.hstack((lung_X, categorical_col.transpose()))
         categorical_features = [lung_X.shape[1]]
 
-        tree = RangerTreeSurvival(
+        tree = SpruceTreeSurvival(
             respect_categorical_features=respect_categorical_features,
         )
 
@@ -177,7 +177,7 @@ class TestRangerTreeSurvival:
         tree.predict(lung_X_c)
 
     def test_split_rule(self, lung_X, lung_y, split_rule):
-        tree = RangerTreeSurvival(split_rule=split_rule)
+        tree = SpruceTreeSurvival(split_rule=split_rule)
         assert tree.criterion == split_rule
 
         if split_rule not in ["logrank", "extratrees", "C", "C_ignore_ties", "maxstat"]:
@@ -199,52 +199,52 @@ class TestRangerTreeSurvival:
             assert tree.split_rule_ == 4
 
         if split_rule != "extratrees":
-            tree = RangerTreeSurvival(split_rule=split_rule, num_random_splits=2)
+            tree = SpruceTreeSurvival(split_rule=split_rule, num_random_splits=2)
             with pytest.raises(ValueError):
                 tree.fit(lung_X, lung_y)
 
     def test_split_select_weights(self, lung_X, lung_y):
         n_trees = 1
         weights = [0.1] * lung_X.shape[1]
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y, split_select_weights=weights)
 
         weights = [0.1] * (lung_X.shape[1] - 1)
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
 
         with pytest.raises(RuntimeError):
             tree.fit(lung_X, lung_y, split_select_weights=weights)
 
         weights = [[0.1] * (lung_X.shape[1])] * n_trees
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y, split_select_weights=weights)
 
         weights = [[0.1] * (lung_X.shape[1])] * (n_trees + 1)
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         with pytest.raises(RuntimeError):
             tree.fit(lung_X, lung_y, split_select_weights=weights)
 
     def test_regularization(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         assert tree.regularization_factor_ == []
         assert not tree.use_regularization_factor_
 
         # vector must be between 0 and 1 and length matching feature num
         for r in [[1.1], [-0.1], [1, 1]]:
-            tree = RangerTreeSurvival(regularization_factor=r)
+            tree = SpruceTreeSurvival(regularization_factor=r)
             with pytest.raises(ValueError):
                 tree.fit(lung_X, lung_y)
 
         # vector of ones isn't applied
-        tree = RangerTreeSurvival(regularization_factor=[1] * lung_X.shape[1])
+        tree = SpruceTreeSurvival(regularization_factor=[1] * lung_X.shape[1])
         tree.fit(lung_X, lung_y)
         assert tree.regularization_factor_ == []
         assert not tree.use_regularization_factor_
 
         # regularization vector is used
         reg = [0.5]
-        tree = RangerTreeSurvival(
+        tree = SpruceTreeSurvival(
             regularization_factor=reg,
         )
         tree.fit(lung_X, lung_y)
@@ -252,16 +252,16 @@ class TestRangerTreeSurvival:
         assert tree.use_regularization_factor_
 
     def test_always_split_features(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y, always_split_features=[0])
         # feature 0 is in every tree split
-        for tree in tree.ranger_forest_["forest"]["split_var_ids"]:
+        for tree in tree.spruce_forest_["forest"]["split_var_ids"]:
             assert 0 in tree
 
     def test_sample_weight(self, lung_X, lung_y):
-        forest_w = RangerTreeSurvival()
+        forest_w = SpruceTreeSurvival()
         forest_w.fit(lung_X, lung_y, sample_weight=[1] * len(lung_y))
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
 
         pred_w = forest_w.predict(lung_X)
@@ -270,31 +270,31 @@ class TestRangerTreeSurvival:
         np.testing.assert_array_equal(pred.reshape(-1, 1), pred_w.reshape(-1, 1))
 
     def test_get_tags(self):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tags = tree._get_tags()
         assert tags["requires_y"]
 
     # We can't check this because we conform to scikit-survival api,
     # rather than scikit-learn's
     # def test_check_estimator(self):
-    #     check_estimator(RangerTreeSurvival())
+    #     check_estimator(SpruceTreeSurvival())
 
     def test_get_depth(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         depth = tree.get_depth()
         assert isinstance(depth, int)
         assert depth > 0
 
     def test_get_n_leaves(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         leaves = tree.get_n_leaves()
         assert isinstance(leaves, int)
         assert np.all(leaves > 0)
 
     def test_apply(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         leaves = tree.apply(lung_X)
         assert isinstance(leaves, np.ndarray)
@@ -302,14 +302,14 @@ class TestRangerTreeSurvival:
         assert len(leaves) == len(lung_X)
 
     def test_decision_path(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         paths = tree.decision_path(lung_X)
         assert isinstance(paths, csr_matrix)
         assert paths.shape[0] == len(lung_X)
 
     def test_tree_interface(self, lung_X, lung_y):
-        tree = RangerTreeSurvival()
+        tree = SpruceTreeSurvival()
         tree.fit(lung_X, lung_y)
         # access attributes the way we would expect to in sklearn
         tree_ = tree.tree_

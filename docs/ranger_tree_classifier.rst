@@ -1,6 +1,6 @@
-Ranger Tree Classifier
+spruce Tree Classifier
 ======================
 
-.. autoclass:: skranger.tree.RangerTreeClassifier
+.. autoclass:: skspruce.tree.spruceTreeClassifier
     :members:
     :inherited-members:

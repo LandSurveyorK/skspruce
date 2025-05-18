@@ -7,7 +7,7 @@ level of detail, the argument ``enable_tree_details`` must be set to ``True`` on
 ensemble estimators prior to fitting. The single Tree estimators will always perform
 these calculations.
 
-Since ranger does not track this level of detail on its trees, we perform
+Since spruce does not track this level of detail on its trees, we perform
 extra operations in Python to provide them. These operations are currently quite slow
 and not well-optimized.
 
@@ -26,7 +26,7 @@ and ``value`` attributes of the ``Tree`` class.
     each of the trees, we determine the above values using the full training set.
 
 
-.. autoclass:: skranger.tree._tree.Tree
+.. autoclass:: skspruce.tree._tree.Tree
     :members:
     :inherited-members:
 
@@ -34,8 +34,8 @@ and ``value`` attributes of the ``Tree`` class.
 SHAP
 ----
 
-``RangerForestRegressor`` and ``RangerForestClassifier`` can be used with shap. A
-context manager is provided which patches ``skranger`` objects so that they work
+``spruceForestRegressor`` and ``spruceForestClassifier`` can be used with shap. A
+context manager is provided which patches ``skspruce`` objects so that they work
 with shap.
 
 .. code-block:: python
@@ -43,13 +43,13 @@ with shap.
     from shap import TreeExplainer
     from sklearn.datasets import load_iris
     from sklearn.model_selection import train_test_split
-    from skranger.ensemble import RangerForestClassifier
-    from skranger.utils.shap import shap_patch
+    from skspruce.ensemble import spruceForestClassifier
+    from skspruce.utils.shap import shap_patch
 
     X, y = load_iris(return_X_y=True)
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    forest = RangerForestClassifier(enable_tree_details=True).fit(X_train, y_train)
+    forest = spruceForestClassifier(enable_tree_details=True).fit(X_train, y_train)
 
     with shap_patch():
         explainer = TreeExplainer(model=forest)
