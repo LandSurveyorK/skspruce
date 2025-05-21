@@ -1,3 +1,4 @@
 [submodule "spruce"]
 	path = spruce
 	url = https://github.com/LandSurveyorK/spruce
+	branch = mentchlabs

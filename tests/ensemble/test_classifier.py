@@ -12,8 +12,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.validation import check_is_fitted
 
-from skranger.ensemble import SpruceForestClassifier
-from skranger.tree import SpruceTreeClassifier
+from skspruce.ensemble import SpruceForestClassifier
+from skspruce.tree import SpruceTreeClassifier
 
 
 class TestSpruceForestClassifier:
@@ -28,8 +28,8 @@ class TestSpruceForestClassifier:
         check_is_fitted(forest)
         assert hasattr(forest, "classes_")
         assert hasattr(forest, "n_classes_")
-        assert hasattr(forest, "ranger_forest_")
-        assert hasattr(forest, "ranger_class_order_")
+        assert hasattr(forest, "spruce_forest_")
+        assert hasattr(forest, "spruce_class_order_")
         assert hasattr(forest, "n_features_in_")
 
     def test_predict(self, iris_X, iris_y):
@@ -347,7 +347,7 @@ class TestSpruceForestClassifier:
         forest = SpruceForestClassifier()
         forest.fit(iris_X, iris_y, always_split_features=[0])
         # feature 0 is in every tree split
-        for tree in forest.ranger_forest_["forest"]["split_var_ids"]:
+        for tree in forest.spruce_forest_["forest"]["split_var_ids"]:
             assert 0 in tree
 
     def test_accuracy(self, iris_X, iris_y):
@@ -361,15 +361,15 @@ class TestSpruceForestClassifier:
         y_pred_rf = rf.predict(X_test)
         rf_acc = accuracy_score(y_test, y_pred_rf)
 
-        # train and test a ranger classifier
+        # train and test a spruce classifier
         ra = SpruceForestClassifier()
         ra.fit(X_train, y_train)
         y_pred_ra = ra.predict(X_test)
-        ranger_acc = accuracy_score(y_test, y_pred_ra)
+        spruce_acc = accuracy_score(y_test, y_pred_ra)
 
         # the accuracy should be good
         assert rf_acc > 0.9
-        assert ranger_acc > 0.9
+        assert spruce_acc > 0.9
 
     def test_feature_importances_(self, iris_X, iris_y, importance, local_importance):
         forest = SpruceForestClassifier(

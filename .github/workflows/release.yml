@@ -35,7 +35,7 @@ jobs:
         # targets without wheels for numpy/scipy
         CIBW_SKIP: "*cp310*linux_i686* *cp310-win32* *musl*"
         CIBW_BEFORE_BUILD: python buildpre.py
-        CIBW_TEST_COMMAND: python -c "import skranger; print(skranger.__version__); from skranger import ranger"
+        CIBW_TEST_COMMAND: python -c "import skspruce; print(skspruce.__version__); from skspruce import spruce"
 
     - name: Show wheelhouse
       run: |
